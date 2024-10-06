@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EasySearch Ai - Official</title>
+    <title>EasySearch Online</title>
     <style>
         /* Global reset */
         * {
@@ -22,38 +22,42 @@
             padding: 20px;
         }
 
-        /* Main container styling */
+        /* Main container */
         .container {
             width: 100%;
-            max-width: 600px;
+            max-width: 1200px;
             background-color: #ffffff;
             padding: 20px;
             border-radius: 15px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
 
         h1 {
             text-align: center;
-            font-size: 2.2em;
+            font-size: 2.5em;
             margin-bottom: 20px;
             color: #0B0052;
         }
 
         /* Chat box */
         #chat-box {
-            max-height: 400px;
+            flex-grow: 1;
             overflow-y: auto;
-            margin-bottom: 20px;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 10px;
             background-color: #f9f9f9;
             box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            max-height: 70vh; /* Adjusts to keep chat within view */
         }
 
         /* Chat bubbles */
         .chat {
-            padding: 10px;
+            padding: 12px;
             border-radius: 10px;
             margin-bottom: 10px;
             max-width: 80%;
@@ -80,10 +84,10 @@
             align-items: center;
         }
 
-        /* Query input field */
+        /* Query input */
         #query {
-            width: 75%;
-            padding: 10px;
+            width: 85%;
+            padding: 12px;
             border: 2px solid #0B0052;
             border-radius: 5px;
             font-size: 1em;
@@ -93,38 +97,37 @@
         button {
             background-color: #0B0052;
             color: white;
-            padding: 10px 20px;
+            padding: 12px 20px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             font-size: 1em;
-            margin-left: 10px;
         }
 
         button:hover {
             background-color: #53247F;
         }
 
-        /* Disclaimer text */
+        /* Disclaimer */
         .disclaimer {
             font-size: 0.9em;
             color: #666;
             text-align: center;
-            margin-top: 15px;
+            margin-top: 10px;
         }
 
-        /* Responsive design */
+        /* Responsive styling */
         @media (max-width: 768px) {
             .container {
                 padding: 15px;
             }
 
             h1 {
-                font-size: 1.8em;
+                font-size: 2em;
             }
 
             #query {
-                width: 70%;
+                width: 75%;
             }
 
             button {
@@ -138,7 +141,7 @@
             }
 
             #query {
-                width: 65%;
+                width: 70%;
             }
 
             button {
@@ -155,9 +158,11 @@
             const userQuery = document.getElementById('query').value;
             const chatBox = document.getElementById('chat-box');
 
+            // Display user query
             const userMessage = `<div class='chat user-query'>${userQuery}</div>`;
             chatBox.innerHTML += userMessage;
 
+            // Fetch response from server
             fetch('/query', {
                 method: 'POST',
                 headers: {
@@ -169,6 +174,9 @@
             .then(data => {
                 const botMessage = `<div class='chat bot-response'>${data.response}</div>`;
                 chatBox.innerHTML += botMessage;
+
+                // Scroll to bottom
+                chatBox.scrollTop = chatBox.scrollHeight;
             });
         }
     </script>
