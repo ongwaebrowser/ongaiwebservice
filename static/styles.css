@@ -1,0 +1,5 @@
+body { font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; }
+#chat-box { width: 100%; max-width: 600px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+.chat { margin-bottom: 10px; padding: 10px; border-radius: 5px; }
+.user-query { background-color: #e0ffe0; text-align: right; }
+.bot-response { background-color: #f0f0f0; text-align: left; }
