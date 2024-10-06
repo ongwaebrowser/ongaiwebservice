@@ -20,7 +20,7 @@ def query():
         answer = markdown2.markdown(data['answer'])
         return jsonify({'response': answer})
     else:
-        return jsonify({'response': "Some error occurred.Please Prefer asking a Shorter question. For example, What is pizza."})
+        return jsonify({'response': "Dear user, some error occurred, either the network is busy or some problem was encountered .Have no worry, You can Please try asking again!😊."})
 
 if __name__ == '__main__':
     app.run(debug=True)
