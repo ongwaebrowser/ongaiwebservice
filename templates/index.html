@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EasySearch Online</title>
+    <title>EasySearch AI</title>
     <style>
         /* Global reset */
         * {
@@ -19,25 +19,26 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            padding: 20px;
+            overflow: hidden;
         }
 
         /* Main container */
         .container {
             width: 100%;
-            max-width: 1200px;
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            max-width: 1000px;
+            height: 100%;
             display: flex;
             flex-direction: column;
-            height: 100%;
+            justify-content: space-between;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
             text-align: center;
-            font-size: 2.5em;
+            font-size: 2em;
             margin-bottom: 20px;
             color: #0B0052;
         }
@@ -46,13 +47,12 @@
         #chat-box {
             flex-grow: 1;
             overflow-y: auto;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
+            padding: 15px;
             background-color: #f9f9f9;
+            border-radius: 10px;
+            border: 1px solid #ddd;
             box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
             margin-bottom: 20px;
-            max-height: 70vh; /* Adjusts to keep chat within view */
         }
 
         /* Chat bubbles */
@@ -60,7 +60,7 @@
             padding: 12px;
             border-radius: 10px;
             margin-bottom: 10px;
-            max-width: 80%;
+            max-width: 85%;
             word-wrap: break-word;
         }
 
@@ -86,7 +86,7 @@
 
         /* Query input */
         #query {
-            width: 85%;
+            flex: 1;
             padding: 12px;
             border: 2px solid #0B0052;
             border-radius: 5px;
@@ -101,6 +101,7 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            margin-left: 10px;
             font-size: 1em;
         }
 
@@ -116,40 +117,48 @@
             margin-top: 10px;
         }
 
-        /* Responsive styling */
+        /* Fullscreen height adjustments */
+        html, body {
+            height: 100%;
+        }
+
+        /* Mobile responsiveness */
         @media (max-width: 768px) {
             .container {
                 padding: 15px;
             }
 
             h1 {
-                font-size: 2em;
+                font-size: 1.5em;
+            }
+
+            #chat-box {
+                padding: 10px;
             }
 
             #query {
-                width: 75%;
+                padding: 10px;
             }
 
             button {
                 font-size: 0.9em;
+                padding: 10px 15px;
             }
         }
 
+        /* Mobile view layout adjustments */
         @media (max-width: 480px) {
             h1 {
-                font-size: 1.5em;
+                font-size: 1.2em;
             }
 
             #query {
-                width: 70%;
+                padding: 8px;
             }
 
             button {
-                font-size: 0.8em;
-            }
-
-            #chat-box {
-                max-height: 300px;
+                padding: 10px;
+                font-size: 0.85em;
             }
         }
     </style>
@@ -158,11 +167,12 @@
             const userQuery = document.getElementById('query').value;
             const chatBox = document.getElementById('chat-box');
 
-            // Display user query
             const userMessage = `<div class='chat user-query'>${userQuery}</div>`;
             chatBox.innerHTML += userMessage;
 
-            // Fetch response from server
+            // Scroll to bottom after user message
+            chatBox.scrollTop = chatBox.scrollHeight;
+
             fetch('/query', {
                 method: 'POST',
                 headers: {
@@ -175,7 +185,7 @@
                 const botMessage = `<div class='chat bot-response'>${data.response}</div>`;
                 chatBox.innerHTML += botMessage;
 
-                // Scroll to bottom
+                // Scroll to bottom after bot message
                 chatBox.scrollTop = chatBox.scrollHeight;
             });
         }
