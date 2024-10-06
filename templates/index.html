@@ -5,6 +5,104 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ongai Web Service</title>
     <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        /* Body and layout */
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #0B0052 0%, #53247F 100%);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #fff;
+        }
+
+        /* Container for the whole chat box */
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            color: #000;
+        }
+
+        /* Header for the application title */
+        h1 {
+            text-align: center;
+            font-size: 2em;
+            margin-bottom: 20px;
+            color: #0B0052;
+        }
+
+        /* Chat box area */
+        #chat-box {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+
+        /* Chat bubbles */
+        .chat {
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        /* User message bubble */
+        .user-query {
+            background-color: #0B0052;
+            color: #fff;
+            align-self: flex-start;
+        }
+
+        /* Bot response bubble */
+        .bot-response {
+            background-color: #e0e0e0;
+            align-self: flex-end;
+        }
+
+        /* Input field and button styling */
+        #query {
+            width: 80%;
+            padding: 10px;
+            border: 2px solid #0B0052;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        /* Send button */
+        button {
+            background-color: #0B0052;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        button:hover {
+            background-color: #53247F;
+        }
+
+        /* Disclaimer text */
+        .disclaimer {
+            font-size: 0.9em;
+            color: #666;
+            text-align: center;
+            margin-top: 15px;
+        }
+    </style>
     <script>
         function sendQuery() {
             const userQuery = document.getElementById('query').value;
@@ -29,10 +127,14 @@
     </script>
 </head>
 <body>
-    <div id="chat-box"></div>
-    <div>
-        <input type="text" id="query" placeholder="Enter your query..." style="width: 80%;">
-        <button onclick="sendQuery()">Send</button>
+    <div class="container">
+        <h1>EasySearch AI</h1>
+        <div id="chat-box"></div>
+        <div>
+            <input type="text" id="query" placeholder="Enter your query...">
+            <button onclick="sendQuery()">Send</button>
+        </div>
+        <p class="disclaimer">EasySearch AI can make errors, check important info!</p>
     </div>
 </body>
 </html>
