@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ongai Web Service</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script>
+        function sendQuery() {
+            const userQuery = document.getElementById('query').value;
+            const chatBox = document.getElementById('chat-box');
+
+            const userMessage = `<div class='chat user-query'>${userQuery}</div>`;
+            chatBox.innerHTML += userMessage;
+
+            fetch('/query', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `query=${encodeURIComponent(userQuery)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                const botMessage = `<div class='chat bot-response'>${data.response}</div>`;
+                chatBox.innerHTML += botMessage;
+            });
+        }
+    </script>
+</head>
+<body>
+    <div id="chat-box"></div>
+    <div>
+        <input type="text" id="query" placeholder="Enter your query..." style="width: 80%;">
+        <button onclick="sendQuery()">Send</button>
+    </div>
+</body>
+</html>
