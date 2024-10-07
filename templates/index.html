@@ -4,162 +4,109 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EasySearch AI</title>
+    <link rel="stylesheet" href="/static/styles.css">
     <style>
-        /* Global reset */
+        /* Reset some basic styles */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
             font-family: Arial, sans-serif;
-            background-color: #fff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* Main container */
-        .container {
-            width: 100%;
-            max-width: 1000px;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            background-color: #ffffff;
+            background-color: #F3F4F6;
             padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
             border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
-            text-align: center;
-            font-size: 2em;
-            margin-bottom: 20px;
-            color: #0B0052;
-        }
-
-        /* Chat box */
-        #chat-box {
-            flex-grow: 1;
-            overflow-y: auto;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
             padding: 15px;
-            background-color: #f9f9f9;
-            border-radius: 10px;
-            border: 1px solid #ddd;
-            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
-            margin-bottom: 20px;
         }
 
-        /* Chat bubbles */
-        .chat {
-            padding: 12px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            max-width: 85%;
-            word-wrap: break-word;
-        }
-
-        /* User message */
-        .user-query {
-            background-color: #0B0052;
-            color: #fff;
-            align-self: flex-start;
-        }
-
-        /* Bot response */
-        .bot-response {
-            background-color: #e0e0e0;
-            align-self: flex-end;
-        }
-
-        /* Input section */
-        .input-section {
+        /* Header styles */
+        .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 10px;
+            background-color: #F9FAFB;
+            border-radius: 10px 10px 0 0;
+            border-bottom: 1px solid #E5E7EB;
         }
 
-        /* Query input */
-        #query {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #0B0052;
-            border-radius: 5px;
-            font-size: 1em;
-        }
-
-        /* Send button */
-        button {
-            background-color: #0B0052;
-            color: white;
-            padding: 12px 20px;
+        .header button {
+            background-color: transparent;
             border: none;
-            border-radius: 5px;
+            font-size: 20px;
             cursor: pointer;
+        }
+
+        .header select {
+            background-color: #F3F4F6;
+            border: 1px solid #E5E7EB;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        /* Chat box container */
+        #chat-box {
+            height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        /* Chat bubble styling */
+        .chat {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 20px;
+            max-width: 80%;
+            font-size: 16px;
+        }
+
+        .user-query {
+            background-color: #4A90E2;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .bot-response {
+            background-color: #F0F0F0;
+            color: #333;
+        }
+
+        /* Input area styling */
+        .input-area {
+            display: flex;
+            padding: 10px;
+            background-color: #F9FAFB;
+            border-top: 1px solid #E5E7EB;
+            border-radius: 0 0 10px 10px;
+        }
+
+        .input-area input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #E5E7EB;
+            border-radius: 25px;
+            outline: none;
+            font-size: 16px;
+        }
+
+        .input-area button {
+            background-color: #4A90E2;
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 50%;
             margin-left: 10px;
-            font-size: 1em;
-        }
-
-        button:hover {
-            background-color: #53247F;
-        }
-
-        /* Disclaimer */
-        .disclaimer {
-            font-size: 0.9em;
-            color: #666;
-            text-align: center;
-            margin-top: 10px;
-        }
-
-        /* Fullscreen height adjustments */
-        html, body {
-            height: 100%;
-        }
-
-        /* Mobile responsiveness */
-        @media (max-width: 768px) {
-            .container {
-                padding: 15px;
-            }
-
-            h1 {
-                font-size: 1.5em;
-            }
-
-            #chat-box {
-                padding: 10px;
-            }
-
-            #query {
-                padding: 10px;
-            }
-
-            button {
-                font-size: 0.9em;
-                padding: 10px 15px;
-            }
-        }
-
-        /* Mobile view layout adjustments */
-        @media (max-width: 480px) {
-            h1 {
-                font-size: 1.2em;
-            }
-
-            #query {
-                padding: 8px;
-            }
-
-            button {
-                padding: 10px;
-                font-size: 0.85em;
-            }
+            cursor: pointer;
         }
     </style>
     <script>
@@ -169,9 +116,6 @@
 
             const userMessage = `<div class='chat user-query'>${userQuery}</div>`;
             chatBox.innerHTML += userMessage;
-
-            // Scroll to bottom after user message
-            chatBox.scrollTop = chatBox.scrollHeight;
 
             fetch('/query', {
                 method: 'POST',
@@ -184,22 +128,30 @@
             .then(data => {
                 const botMessage = `<div class='chat bot-response'>${data.response}</div>`;
                 chatBox.innerHTML += botMessage;
-
-                // Scroll to bottom after bot message
-                chatBox.scrollTop = chatBox.scrollHeight;
             });
         }
     </script>
 </head>
 <body>
     <div class="container">
-        <h1>EasySearch AI</h1>
-        <div id="chat-box"></div>
-        <div class="input-section">
-            <input type="text" id="query" placeholder="Enter your query...">
-            <button onclick="sendQuery()">Send</button>
+        <!-- Header section -->
+        <div class="header">
+            <button>&#8592;</button>
+            <select>
+                <option>E-AI 1.0</option></option>
+            </select>
         </div>
-        <p class="disclaimer">EasySearch AI can make errors, check important info!</p>
+
+        <!-- Chat box section -->
+        <div id="chat-box">
+            <!-- Messages will appear here -->
+        </div>
+
+        <!-- Input area section -->
+        <div class="input-area">
+            <input type="text" id="query" placeholder="Enter your query...">
+            <button onclick="sendQuery()">&#10148;</button>
+        </div>
     </div>
 </body>
 </html>
