@@ -20,7 +20,7 @@ def query():
         answer = markdown2.markdown(data['answer'])
         return jsonify({'response': answer})
     else:
-        return jsonify({'response': "retry."})
+        return jsonify({'response': "..."})
 
 if __name__ == '__main__':
     app.run(debug=True)
