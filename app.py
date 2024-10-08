@@ -20,7 +20,7 @@ def query():
         answer = markdown2.markdown(data['answer'])
         return jsonify({'response': answer})
     else:
-        return jsonify({'response': "I am sorry you are experiencing this problem. As a mini Ai, am trained to answer shorthand questions like start by 'what is...'.The error may be resolved by reformatting your search question or use key words. Minor possible causes may include connectivity and busy response mode."})
+        return jsonify({'response': "retry."})
 
 if __name__ == '__main__':
     app.run(debug=True)
