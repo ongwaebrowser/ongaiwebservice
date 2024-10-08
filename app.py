@@ -20,7 +20,7 @@ def query():
         answer = markdown2.markdown(data['answer'])
         return jsonify({'response': answer})
     else:
-        return jsonify({'response': "Some mini error occurred.To resolve this, try reformatting your question like, 'What is...' and errors will be solved. Thank you for your understanding, retry😊."})
+        return jsonify({'response': "I am sorry you are experiencing this problem. As a mini Ai, am trained to answer shorthand questions like start by 'what is...'.The error may be resolved by reformatting your search question. Minor possible causes may include connectivity and busy response mode."})
 
 if __name__ == '__main__':
     app.run(debug=True)
