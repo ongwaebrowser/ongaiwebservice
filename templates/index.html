@@ -4,9 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EasySearch AI</title>
-    <link rel="stylesheet" href="/static/styles.css">
     <style>
-        /* Reset some basic styles */
+        /* Reset basic styles */
         * {
             margin: 0;
             padding: 0;
@@ -15,17 +14,20 @@
         
         body {
             font-family: Arial, sans-serif;
-            background-color: #F3F4F6;
+            background-color: var(--background-color, #F3F4F6);
+            color: var(--text-color, #000);
+            transition: background-color 0.3s ease, color 0.3s ease;
             padding: 20px;
         }
 
         .container {
             max-width: 600px;
             margin: 0 auto;
-            background-color: white;
+            background-color: var(--container-bg-color, white);
             border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             padding: 15px;
+            transition: background-color 0.3s ease;
         }
 
         /* Header styles */
@@ -34,7 +36,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 10px;
-            background-color: #F9FAFB;
+            background-color: var(--header-bg-color, #F9FAFB);
             border-radius: 10px 10px 0 0;
             border-bottom: 1px solid #E5E7EB;
         }
@@ -46,11 +48,15 @@
             cursor: pointer;
         }
 
-        .header select {
-            background-color: #F3F4F6;
+        .header select, .header .menu {
+            background-color: var(--input-bg-color, #F3F4F6);
             border: 1px solid #E5E7EB;
             padding: 5px 10px;
             border-radius: 5px;
+        }
+
+        .menu {
+            cursor: pointer;
         }
 
         /* Chat box container */
@@ -77,15 +83,15 @@
         }
 
         .bot-response {
-            background-color: #F0F0F0;
-            color: #333;
+            background-color: var(--bot-bg-color, #F0F0F0);
+            color: var(--bot-text-color, #333);
         }
 
         /* Input area styling */
         .input-area {
             display: flex;
             padding: 10px;
-            background-color: #F9FAFB;
+            background-color: var(--input-bg-color, #F9FAFB);
             border-top: 1px solid #E5E7EB;
             border-radius: 0 0 10px 10px;
         }
@@ -97,6 +103,8 @@
             border-radius: 25px;
             outline: none;
             font-size: 16px;
+            background-color: var(--input-bg-color, #FFF);
+            color: var(--text-color, #000);
         }
 
         .input-area button {
@@ -108,14 +116,42 @@
             margin-left: 10px;
             cursor: pointer;
         }
+
+        .input-area button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Dark mode styles */
+        .dark-mode {
+            --background-color: #1E1E1E;
+            --text-color: #FFFFFF;
+            --container-bg-color: #333;
+            --header-bg-color: #444;
+            --input-bg-color: #555;
+            --bot-bg-color: #444;
+            --bot-text-color: #DDD;
+        }
     </style>
     <script>
+        function toggleMode() {
+            document.body.classList.toggle('dark-mode');
+        }
+
         function sendQuery() {
-            const userQuery = document.getElementById('query').value;
+            const queryInput = document.getElementById('query');
+            const userQuery = queryInput.value;
             const chatBox = document.getElementById('chat-box');
+            const sendButton = document.getElementById('send-button');
+
+            if (!userQuery) return;
 
             const userMessage = `<div class='chat user-query'>${userQuery}</div>`;
             chatBox.innerHTML += userMessage;
+
+            // Clear input and disable the send button
+            queryInput.value = '';
+            sendButton.disabled = true;
 
             fetch('/query', {
                 method: 'POST',
@@ -128,10 +164,10 @@
             .then(data => {
                 const botMessage = `<div class='chat bot-response'>${data.response}</div>`;
                 chatBox.innerHTML += botMessage;
+                sendButton.disabled = false;
             });
         }
     </script>
-    <h2 style="color:000000;"><center>EasySearch AI mini</center></h2><br>
 </head>
 <body>
     <div class="container">
@@ -139,8 +175,9 @@
         <div class="header">
             <button>&#8592;</button>
             <select>
-                <option>EasySearch AI 1.0</option></option>
+                <option>EasySearch AI 1.0</option>
             </select>
+            <div class="menu" onclick="toggleMode()">&#8942;</div>
         </div>
 
         <!-- Chat box section -->
@@ -150,8 +187,8 @@
 
         <!-- Input area section -->
         <div class="input-area">
-            <input type="text" id="query" placeholder="As AI Some Question...">
-            <button onclick="sendQuery()">&#10148;</button>
+            <input type="text" id="query" placeholder="Ask AI a question...">
+            <button id="send-button" onclick="sendQuery()">&#10148;</button>
         </div>
     </div>
 </body>
