@@ -25,7 +25,7 @@
             margin: 0 auto;
             background-color: var(--container-bg-color, white);
             border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
             padding: 15px;
             transition: background-color 0.3s ease;
         }
@@ -46,6 +46,11 @@
             border: none;
             font-size: 20px;
             cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .header button:hover {
+            transform: scale(1.1);
         }
 
         .header select, .header .menu {
@@ -53,10 +58,16 @@
             border: 1px solid #E5E7EB;
             padding: 5px 10px;
             border-radius: 5px;
+            cursor: pointer;
         }
 
         .menu {
             cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .menu:hover {
+            transform: rotate(90deg);
         }
 
         /* Chat box container */
@@ -73,6 +84,7 @@
             border-radius: 20px;
             max-width: 80%;
             font-size: 16px;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
         }
 
         .user-query {
@@ -105,6 +117,12 @@
             font-size: 16px;
             background-color: var(--input-bg-color, #FFF);
             color: var(--text-color, #000);
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); /* Elevation effect */
+            transition: box-shadow 0.2s ease;
+        }
+
+        .input-area input:focus {
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* Enhanced on focus */
         }
 
         .input-area button {
@@ -115,11 +133,18 @@
             border-radius: 50%;
             margin-left: 10px;
             cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Button elevation */
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
         }
 
         .input-area button:disabled {
             opacity: 0.6;
             cursor: not-allowed;
+        }
+
+        .input-area button:hover {
+            background-color: #357ABD; /* Slightly darker on hover */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Increased shadow */
         }
 
         /* Dark mode styles */
