@@ -2,3 +2,4 @@ Flask
 requests
 markdown2
 gunicorn
+python-dotenv
