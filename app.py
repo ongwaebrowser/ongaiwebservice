@@ -1,9 +1,22 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session
 import requests
 import markdown2
+import os
+from dotenv import load_dotenv
+from datetime import timedelta
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = Flask(__name__)
 
+# Flask Secret Key - securely stored in the .env file
+app.secret_key = os.getenv('FLASK_SECRET_KEY')
+
+# Set session timeout (e.g., 30 minutes of inactivity)
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
+
+# API URL to query your AI service
 API_URL = "https://ongai.vercel.app/api/ask?message="
 
 @app.route('/')
@@ -13,35 +26,20 @@ def home():
 @app.route('/query', methods=['POST'])
 def query():
     user_input = request.form['query']
+    response = requests.get(API_URL + user_input)
     
-    # Limit query length for free users
-    if len(user_input) > 500:  # Adjust the length as needed
-        return jsonify({
-            'response': "Your query is too long for the free service. Please simplify your query or consider waiting for the pro mode with longer responses."
-        })
+    if response.status_code == 200:
+        data = response.json()
+        answer = markdown2.markdown(data['answer'])
+        return jsonify({'response': answer})
+    else:
+        return jsonify({'response': "I am sorry you are experiencing this, I am instructed to answer shorthand questions for free service users. The error may be due to the following reasons: either your query requires a longer description, or an error occurred while submitting your response. To solve the error, please reformat and simplify your query, such as 'what is...' or open a dialog with greetings like 'hello.' Pro mode with long responses will be available soon as part of a paid service. Thanks for your understanding."})
 
-    try:
-        # Call the external API
-        response = requests.get(API_URL + user_input)
-        
-        # Check for a successful response
-        if response.status_code == 200:
-            data = response.json()
-            answer = markdown2.markdown(data['answer'])
-            return jsonify({'response': answer})
-        else:
-            # Generic message when response fails
-            return jsonify({
-                'response': "An unexpected error occurred while processing your query. Please try simplifying your request, or try again later. Thanks for your understanding!"
-            })
-
-    except requests.exceptions.RequestException as e:
-        # Log the exception internally, don't show the error to the user
-        print(f"API Error: {str(e)}")  # This will only show in your logs/console
-
-        return jsonify({
-            'response': "There was an issue processing your request. Please try again later or simplify your query for a better response."
-        })
+# Option to reset session
+@app.route('/reset', methods=['POST'])
+def reset_session():
+    session.clear()  # Clears the session data, including any dialog history
+    return jsonify({"message": "Session reset successfully."})
 
 if __name__ == '__main__':
     app.run(debug=True)
