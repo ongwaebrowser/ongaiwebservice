@@ -55,7 +55,7 @@
             padding: 5px;
             border: none;
             background: transparent;
-            color: #0b0052;
+            color: inherit; /* Inherit color for dark mode */
             font-weight: bold;
             cursor: pointer;
         }
@@ -110,19 +110,22 @@
         /* Copy button styling */
         .copy-btn {
             position: absolute;
-            top: 10px;
-            right: 15px;
+            top: 5px;
+            right: 10px;
             background-color: #4A90E2;
             color: white;
             border: none;
-            padding: 5px 10px;
+            padding: 3px 8px;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 12px;
+            margin-left: 10px;
+            opacity: 0.8;
         }
 
         .copy-btn:hover {
             background-color: #357ABD;
+            opacity: 1;
         }
 
         /* Input area styling */
@@ -241,6 +244,10 @@
             background-color: #555;
         }
 
+        .dark-mode select {
+            color: #DDD; /* Select title changes color in dark mode */
+        }
+
         /* Toast Notification styling */
         .toast {
             visibility: hidden;
@@ -322,15 +329,12 @@
             fetch(`/query`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
+                    'Content-Type': 'application/json',
                 },
-                body: new URLSearchParams({
-                    'query': userQuery
-                })
+                body: JSON.stringify({ message: userQuery }),
             })
             .then(response => response.json())
             .then(data => {
-                // Replace loading dots with response
                 const responseMessage = chatBox.querySelector('.loading-dots').parentElement;
                 responseMessage.innerHTML = `${data.response} <button class="copy-btn" onclick="copyToClipboard('${data.response}')">Copy</button>`;
             })
