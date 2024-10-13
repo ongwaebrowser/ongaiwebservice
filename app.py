@@ -33,7 +33,7 @@ def query():
         answer = markdown2.markdown(data['answer'])
         return jsonify({'response': answer})
     else:
-        return jsonify({'response': "I am sorry you are experiencing this, I am instructed to answer shorthand questions for free service users. The error may be due to the following reasons: either your query requires a longer description, or an error occurred while submitting your response. To solve the error, please reformat and simplify your query, such as 'what is...' or open a dialog with greetings like 'hello.' Pro mode with long responses will be available soon as part of a paid service. Thanks for your understanding."})
+        return jsonify({'response': "...."})
 
 # Option to reset session
 @app.route('/reset', methods=['POST'])
