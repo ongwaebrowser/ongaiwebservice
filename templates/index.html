@@ -141,6 +141,38 @@
             background-color: #357ABD;
         }
 
+        /* Loader animation (3 dots) */
+        .loading-dots {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            padding-left: 20px;
+        }
+
+        .loading-dots span {
+            width: 8px;
+            height: 8px;
+            background-color: #4A90E2;
+            border-radius: 50%;
+            margin-right: 5px;
+            animation: bounce 0.6s infinite alternate;
+        }
+
+        .loading-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loading-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            to {
+                opacity: 0.3;
+                transform: translateY(-6px);
+            }
+        }
+
         /* Scrollbar styling for chat box */
         #chat-box::-webkit-scrollbar {
             width: 8px;
@@ -196,6 +228,7 @@
 
             if (!userQuery) return;
 
+            // Add user's query to chat
             const userMessage = `<div class='chat user-query'>${userQuery}</div>`;
             chatBox.innerHTML += userMessage;
             chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to bottom
@@ -204,20 +237,27 @@
             queryInput.value = '';
             sendButton.disabled = true;
 
-            fetch('/query', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: `query=${encodeURIComponent(userQuery)}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                const botMessage = `<div class='chat bot-response'>${data.response}</div>`;
-                chatBox.innerHTML += botMessage;
-                chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to bottom
+            // Simulate loading dots
+            const loadingDots = `
+                <div class='chat bot-response'>
+                    <div class='loading-dots'>
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+            `;
+            chatBox.innerHTML += loadingDots;
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // Simulate response delay
+            setTimeout(() => {
+                // Replace loading dots with response
+                const responseMessage = chatBox.querySelector('.bot-response:last-child');
+                responseMessage.innerHTML = 'This is a simulated response from EasySearch AI. How can I assist you further?';
+
+                // Re-enable the send button
                 sendButton.disabled = false;
-            });
+                chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to bottom
+            }, 2000);  // Simulate a delay for AI thinking
         }
     </script>
 </head>
