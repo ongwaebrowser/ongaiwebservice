@@ -107,6 +107,24 @@
             margin-left: 10px;
         }
 
+        /* Copy button styling */
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background-color: #4A90E2;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .copy-btn:hover {
+            background-color: #357ABD;
+        }
+
         /* Input area styling */
         .input-area {
             display: flex;
@@ -270,7 +288,10 @@
             .then(data => {
                 // Replace loading dots with response
                 const responseMessage = chatBox.querySelector('.bot-response:last-child');
-                responseMessage.innerHTML = data.response;  // Display AI response
+                responseMessage.innerHTML = `
+                    ${data.response}
+                    <button class="copy-btn" onclick="copyResponse(this)">Copy</button>
+                `;
 
                 // Re-enable the send button
                 sendButton.disabled = false;
@@ -284,31 +305,29 @@
                 chatBox.scrollTop = chatBox.scrollHeight;
             });
         }
+
+        function copyResponse(button) {
+            const responseText = button.parentElement.innerText.replace('Copy', '').trim(); // Get response text
+            navigator.clipboard.writeText(responseText).then(() => {
+                alert("Response copied to clipboard!");
+            }).catch(err => {
+                console.error("Failed to copy text: ", err);
+            });
+        }
     </script>
 </head>
 <body>
     <div class="container">
-        <!-- Header section -->
         <div class="header">
-            <!-- Dropdown button for AI version -->
+            <div class="menu" onclick="toggleMode()">☰</div>
             <div class="center">
-                <select id="ai-version">
-                    <option value="v1">EasySearch 1.0</option>
-                </select>
+                EasySearch AI
             </div>
-            
-            <!-- Menu button -->
-            <div class="menu" onclick="toggleMode()">&#8942;</div>
         </div>
-      <!-- Chat box section -->
-        <div id="chat-box">
-            <!-- Messages will appear here -->
-        </div>
-
-        <!-- Input area section -->
+        <div id="chat-box"></div>
         <div class="input-area">
-            <input type="text" id="query" placeholder="Ask AI a question...">
-            <button id="send-button" onclick="sendQuery()">&#10148;</button>
+            <input type="text" id="query" placeholder="Ask something..." oninput="document.getElementById('send-button').disabled = !this.value.trim()">
+            <button id="send-button" onclick="sendQuery()" disabled>⏎</button>
         </div>
     </div>
 </body>
