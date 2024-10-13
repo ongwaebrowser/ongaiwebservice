@@ -34,8 +34,9 @@
             justify-content: space-between;
             align-items: center;
             padding: 15px;
-            background-color: #0b0052;
-            color: white;
+            background-color: #fff;
+            color: #0b0052;
+            border-bottom: 2px solid #e0e0e0;
         }
 
         .header h1 {
@@ -55,7 +56,7 @@
         .header button {
             background-color: transparent;
             border: none;
-            color: white;
+            color: #0b0052;
             font-size: 20px;
             cursor: pointer;
             transition: transform 0.2s ease;
@@ -248,16 +249,25 @@
             chatBox.innerHTML += loadingDots;
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            // Simulate response delay
-            setTimeout(() => {
-                // Replace loading dots with response
-                const responseMessage = chatBox.querySelector('.bot-response:last-child');
-                responseMessage.innerHTML = 'This is a simulated response from EasySearch AI. How can I assist you further?';
+            // Call API
+            fetch(`https://ongai.vercel.app/api/ask?message=${encodeURIComponent(userQuery)}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Replace loading dots with response
+                    const responseMessage = chatBox.querySelector('.bot-response:last-child');
+                    responseMessage.innerHTML = data.response;  // Display AI response
 
-                // Re-enable the send button
-                sendButton.disabled = false;
-                chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to bottom
-            }, 2000);  // Simulate a delay for AI thinking
+                    // Re-enable the send button
+                    sendButton.disabled = false;
+                    chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to bottom
+                })
+                .catch(error => {
+                    const responseMessage = chatBox.querySelector('.bot-response:last-child');
+                    responseMessage.innerHTML = 'Error: Unable to fetch response.';
+
+                    sendButton.disabled = false;
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                });
         }
     </script>
 </head>
@@ -267,6 +277,8 @@
         <div class="header">
             <h1>EasySearch AI</h1>
             <div class="menu" onclick="toggleMode()">&#8942;</div>
+            <!-- AI version button -->
+            <button id="ai-version" onclick="alert('EasySearch AI v1.0')">AI Version</button>
         </div>
 
         <!-- Chat box section -->
