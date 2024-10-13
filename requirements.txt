@@ -3,4 +3,3 @@ requests
 markdown2
 gunicorn
 python-dotenv
-re
