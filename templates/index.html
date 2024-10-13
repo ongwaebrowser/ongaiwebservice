@@ -240,6 +240,50 @@
         .dark-mode .input-area button {
             background-color: #555;
         }
+
+        /* Toast Notification styling */
+        .toast {
+            visibility: hidden;
+            min-width: 250px;
+            margin-left: -125px;
+            background-color: #4A90E2;
+            color: white;
+            text-align: center;
+            border-radius: 25px;
+            padding: 10px;
+            position: fixed;
+            z-index: 1;
+            left: 50%;
+            bottom: 30px;
+            font-size: 16px;
+        }
+
+        .toast.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+
+        @keyframes fadein {
+            from {
+                bottom: 0;
+                opacity: 0;
+            }
+            to {
+                bottom: 30px;
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeout {
+            from {
+                bottom: 30px;
+                opacity: 1;
+            }
+            to {
+                bottom: 0;
+                opacity: 0;
+            }
+        }
     </style>
     <script>
         function toggleMode() {
@@ -287,32 +331,37 @@
             .then(response => response.json())
             .then(data => {
                 // Replace loading dots with response
-                const responseMessage = chatBox.querySelector('.bot-response:last-child');
-                responseMessage.innerHTML = `
-                    ${data.response}
-                    <button class="copy-btn" onclick="copyResponse(this)">Copy</button>
-                `;
-
-                // Re-enable the send button
-                sendButton.disabled = false;
-                chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to bottom
+                const responseMessage = chatBox.querySelector('.loading-dots').parentElement;
+                responseMessage.innerHTML = `${data.response} <button class="copy-btn" onclick="copyToClipboard('${data.response}')">Copy</button>`;
             })
             .catch(error => {
-                const responseMessage = chatBox.querySelector('.bot-response:last-child');
-                responseMessage.innerHTML = 'Error: Unable to fetch response.';
-
-                sendButton.disabled = false;
-                chatBox.scrollTop = chatBox.scrollHeight;
+                showToast("An error occurred. Please try again.");
+                chatBox.querySelector('.loading-dots').parentElement.remove();
             });
         }
 
-        function copyResponse(button) {
-            const responseText = button.parentElement.innerText.replace('Copy', '').trim(); // Get response text
-            navigator.clipboard.writeText(responseText).then(() => {
-                alert("Response copied to clipboard!");
-            }).catch(err => {
-                console.error("Failed to copy text: ", err);
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("Response copied!");
+            }).catch(() => {
+                showToast("Failed to copy.");
             });
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.classList.add('toast');
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => document.body.removeChild(toast), 500);
+            }, 3000);
         }
     </script>
 </head>
@@ -321,7 +370,10 @@
         <div class="header">
             <div class="menu" onclick="toggleMode()">☰</div>
             <div class="center">
-                EasySearch AI
+                <select>
+                    <option value="EasySearch">EasySearch</option>
+                    <option value="Search Assistant">Search Assistant</option>
+                </select>
             </div>
         </div>
         <div id="chat-box"></div>
