@@ -103,15 +103,15 @@
             background-color: #f0f0f0;
             color: #333;
             border-bottom-left-radius: 0;
-            width: 75%;  /* Adjusted width for better reading experience */
+            width: 75%;
             margin-left: 10px;
-            padding-bottom: 40px; /* Added space at the bottom for the copy button */
+            padding-bottom: 40px;
         }
 
         /* Copy button styling */
         .copy-btn {
             position: absolute;
-            bottom: 10px; /* Positioned the button at the bottom */
+            bottom: 10px;
             right: 15px;
             background-color: #4A90E2;
             color: white;
@@ -302,30 +302,30 @@
             // Add user's query to chat
             const userMessage = `<div class='chat user-query'>${userQuery}</div>`;
             chatBox.innerHTML += userMessage;
-            chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to bottom
+            chatBox.scrollTop = chatBox.scrollHeight;
 
-            // Clear input and disable the send button
+            // Clear input field
             queryInput.value = '';
+
+            // Disable send button while processing
             sendButton.disabled = true;
 
-            // Simulate loading dots
-            const loadingDots = `
-                <div class='chat bot-response'>
-                    <div class='loading-dots'>
-                        <span></span><span></span><span></span>
-                    </div>
-                </div>
-            `;
+            // Show loading dots
+            const loadingDots = `<div class='loading-dots'>
+                                    <span></span><span></span><span></span>
+                                </div>`;
             chatBox.innerHTML += loadingDots;
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            // Call API
-            fetch(`/query`, {
+            // Send AJAX request to Flask backend
+            fetch('/query', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
+                    'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: new URLSearchParams({ query: userQuery })
+                body: new URLSearchParams({
+                    query: userQuery
+                })
             })
             .then(response => response.json())
             .then(data => {
