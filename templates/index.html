@@ -132,6 +132,7 @@
             padding: 15px;
             background-color: #fff;
             border-top: 1px solid #e0e0e0;
+            position: relative;
         }
 
         .input-area input {
@@ -161,6 +162,8 @@
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             transition: background-color 0.3s ease;
+            position: relative;
+            z-index: 10;
         }
 
         .input-area button:hover {
@@ -322,46 +325,23 @@
             fetch(`/query`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
+                    'Content-Type': 'application/json',
                 },
-                body: new URLSearchParams({
-                    'query': userQuery
-                })
+                body: JSON.stringify({ query: userQuery }),
             })
             .then(response => response.json())
             .then(data => {
-                // Replace loading dots with response
-                const responseMessage = chatBox.querySelector('.loading-dots').parentElement;
-                responseMessage.innerHTML = `${data.response} <button class="copy-btn" onclick="copyToClipboard('${data.response}')">Copy</button>`;
+                // Replace loading dots with actual response
+                const botMessages = document.querySelectorAll('.loading-dots');
+                botMessages[botMessages.length - 1].parentNode.innerHTML = data.response;
+                chatBox.scrollTop = chatBox.scrollHeight; // Scroll to bottom
             })
             .catch(error => {
-                showToast("An error occurred. Please try again.");
-                chatBox.querySelector('.loading-dots').parentElement.remove();
+                console.error('Error:', error);
+            })
+            .finally(() => {
+                sendButton.disabled = false;  // Re-enable the send button
             });
-        }
-
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                showToast("Response copied!");
-            }).catch(() => {
-                showToast("Failed to copy.");
-            });
-        }
-
-        function showToast(message) {
-            const toast = document.createElement('div');
-            toast.classList.add('toast');
-            toast.textContent = message;
-            document.body.appendChild(toast);
-
-            setTimeout(() => {
-                toast.classList.add('show');
-            }, 100);
-
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => document.body.removeChild(toast), 500);
-            }, 3000);
         }
     </script>
 </head>
@@ -370,17 +350,22 @@
         <div class="header">
             <div class="menu" onclick="toggleMode()">☰</div>
             <div class="center">
-                <select>
-                    <option value="EasySearch">EasySearch</option>
-                    <option value="Search Assistant">Search Assistant</option>
+                <select id="model-select">
+                    <option>EasySearch AI</option>
+                    <option>EasySearch v2</option>
                 </select>
             </div>
         </div>
+
         <div id="chat-box"></div>
+
         <div class="input-area">
-            <input type="text" id="query" placeholder="Ask something..." oninput="document.getElementById('send-button').disabled = !this.value.trim()">
-            <button id="send-button" onclick="sendQuery()" disabled>⏎</button>
+            <input type="text" id="query" placeholder="Enter your query here...">
+            <button id="send-button" onclick="sendQuery()">➤</button>
         </div>
+
+        <!-- Toast Notification -->
+        <div id="toast" class="toast">Copied to clipboard!</div>
     </div>
 </body>
 </html>
