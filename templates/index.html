@@ -189,7 +189,7 @@
                 .then(response => response.json())
                 .then(data => {
                     removeLoader(); // Remove loading dots
-                    animateResponse(data.response); // Animate bot response
+                    animateResponse(data.response); // Animate real bot response from Flask
                 })
                 .catch(error => {
                     removeLoader();
@@ -225,7 +225,7 @@
             }
         }
 
-        // Animate the bot response
+        // Animate the bot response with typing effect
         function animateResponse(text) {
             let i = 0;
             const speed = 50; // Speed of typing animation (ms)
@@ -252,6 +252,13 @@
                 toast.classList.remove('show');
             }, 3000);
         }
+
+        // Capture "Enter" key press event
+        userInput.addEventListener('keyup', (event) => {
+            if (event.key === 'Enter') {
+                sendBtn.click(); // Trigger the submit button click when Enter is pressed
+            }
+        });
     </script>
 </body>
 </html>
