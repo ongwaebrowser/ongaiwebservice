@@ -14,6 +14,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            transition: background-color 0.3s, color 0.3s; /* Smooth transition */
         }
 
         .container {
@@ -24,18 +25,20 @@
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
             padding: 20px;
             position: relative;
+            color: #000;
         }
 
         .chat-box {
             max-height: 500px;
             overflow-y: auto;
-            padding: 20px; /* Increased padding for larger text area */
+            padding: 20px;
             border-bottom: 1px solid #ddd;
-            font-size: 16px; /* Increased font size */
+            font-size: 16px;
+            color: #000; /* Dark mode fix */
         }
 
         .chat {
-            padding: 15px; /* Increased padding */
+            padding: 15px;
             margin: 10px 0;
             border-radius: 5px;
             max-width: 85%;
@@ -59,8 +62,8 @@
 
         input {
             flex: 1;
-            padding: 15px; /* Increased padding for larger input field */
-            font-size: 16px; /* Larger font size */
+            padding: 15px;
+            font-size: 16px;
             border: 1px solid #ddd;
             border-radius: 5px;
         }
@@ -69,7 +72,7 @@
             background-color: #0B0052;
             color: white;
             border: none;
-            padding: 15px; /* Larger button */
+            padding: 15px;
             margin-left: 10px;
             cursor: pointer;
             border-radius: 5px;
@@ -143,19 +146,31 @@
 
         body.dark-mode .container {
             background-color: #333;
+            color: white;
+        }
+
+        body.dark-mode .chat-box {
+            color: white;
         }
 
         body.dark-mode input {
             background-color: #555;
             color: white;
+            border-color: #444;
         }
 
-        .bot-response p {
-            margin: 0;
+        body.dark-mode .bot-response {
+            background-color: #444;
+            color: #fff;
         }
 
-        .bot-response h1, .bot-response h2, .bot-response h3 {
+        body.dark-mode .user-query {
+            background-color: #555;
+        }
+
+        .bot-response p, .bot-response h1, .bot-response h2, .bot-response h3 {
             margin: 0;
+            color: inherit; /* Ensures the text inherits the correct color in dark mode */
         }
 
         /* Responsive design for mobile devices */
@@ -273,11 +288,11 @@
             typeWriter();
         }
 
-        // Sanitize and render HTML content in the bot's response
+        // Sanitize the response to render proper HTML without unsafe tags
         function sanitizeHTML(html) {
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = html;
-            return tempDiv.innerHTML; // Returns clean HTML string
+            const div = document.createElement('div');
+            div.innerHTML = html;
+            return div.innerHTML; // Safely returning the sanitized HTML content
         }
 
         // Show toast notification
@@ -288,13 +303,6 @@
                 toast.classList.remove('show');
             }, 3000);
         }
-
-        // Capture "Enter" key press event
-        userInput.addEventListener('keyup', (event) => {
-            if (event.key === 'Enter') {
-                sendBtn.click(); // Trigger the submit button click when Enter is pressed
-            }
-        });
     </script>
 </body>
 </html>
