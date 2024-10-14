@@ -3,403 +3,216 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="EasySearch AI - Your Intelligent AI Assistant">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>EasySearch AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* Reset basic styles */
-        * {
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f9f9f9;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: #333;
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f7fa;
-            color: #333;
+        header {
+            text-align: center;
             padding: 20px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            color: #0B0052;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            color: #555;
         }
 
         .container {
-            max-width: 800px;
-            margin: 0 auto;
+            width: 90%;
+            max-width: 700px;
             background-color: #fff;
-            border-radius: 15px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            background-color: #fff;
-            color: #0b0052;
-            border-bottom: 2px solid #e0e0e0;
-            position: relative;
-        }
-
-        .header .center {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 20px;
-            color: #0b0052;
-            cursor: pointer;
-        }
-
-        .header select {
-            font-size: 18px;
-            padding: 5px;
-            border: none;
-            background: transparent;
-            color: #0b0052;
-            font-weight: bold;
-            cursor: pointer;
-            transition: color 0.3s ease;
-        }
-
-        .dark-mode .header select {
-            color: #fff;
-        }
-
-        .header .menu {
-            cursor: pointer;
-            font-size: 1.2rem;
-            transition: transform 0.2s ease;
-        }
-
-        .header .menu:hover {
-            transform: rotate(90deg);
-        }
-
-        #chat-box {
-            height: 500px;
-            overflow-y: auto;
+            border-radius: 10px;
             padding: 20px;
-            background-color: #f9fafb;
-        }
-
-        .chat {
-            margin-bottom: 15px;
-            padding: 12px 20px;
-            border-radius: 25px;
-            max-width: 75%;
-            font-size: 16px;
-            line-height: 1.6;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            position: relative;
-        }
-
-        .chat.user-query {
-            background-color: #4A90E2;
-            color: white;
-            margin-left: auto;
-            text-align: right;
-            border-bottom-right-radius: 0;
-        }
-
-        .chat.bot-response {
-            background-color: #f0f0f0;
-            color: #333;
-            border-bottom-left-radius: 0;
-            width: 75%;
-            margin-left: 10px;
-        }
-
-        .copy-btn {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            background-color: #4A90E2;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .copy-btn:hover {
-            background-color: #357ABD;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
         }
 
         .input-area {
             display: flex;
-            align-items: center;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+
+        .input-area textarea {
+            width: 100%;
             padding: 15px;
-            background-color: #fff;
-            border-top: 1px solid #e0e0e0;
-            position: relative;
-        }
-
-        .input-area input {
-            flex: 1;
-            padding: 12px 15px;
-            border: 1px solid #ccc;
-            border-radius: 50px;
+            font-size: 1rem;
+            border-radius: 8px;
+            border: 2px solid #ddd;
             outline: none;
-            font-size: 16px;
-            background-color: #f0f0f0;
-            color: #333;
-            transition: all 0.3s ease;
+            transition: border-color 0.3s;
+            min-height: 120px;
+            resize: none;
         }
 
-        .input-area input:focus {
-            border-color: #4a90e2;
-            background-color: white;
+        .input-area textarea:focus {
+            border-color: #0B0052;
         }
 
-        .input-area button {
-            background-color: #4A90E2;
+        .button-area {
+            text-align: right;
+        }
+
+        .button-area button {
+            padding: 12px 20px;
+            font-size: 1rem;
+            color: #fff;
+            background-color: #0B0052;
             border: none;
-            color: white;
-            padding: 12px 16px;
-            border-radius: 50%;
-            margin-left: 10px;
+            border-radius: 5px;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            transition: background-color 0.3s ease;
-            position: relative;
-            z-index: 10;
+            transition: background-color 0.3s;
         }
 
-        .input-area button:hover {
-            background-color: #357ABD;
+        .button-area button:hover {
+            background-color: #3a007a;
         }
 
-        /* Loader animation (3 dots) */
-        .loading-dots {
-            display: flex;
-            justify-content: flex-start;
-            align-items: center;
-            padding-left: 20px;
+        .response-area {
+            display: none;
+            margin-top: 20px;
         }
 
-        .loading-dots span {
-            width: 8px;
-            height: 8px;
-            background-color: #4A90E2;
+        .response-area h3 {
+            font-size: 1.3rem;
+            color: #333;
+        }
+
+        .response-area p {
+            font-size: 1rem;
+            line-height: 1.5;
+            color: #666;
+        }
+
+        .loader {
+            display: none;
+            margin: 20px auto;
+            border: 4px solid #f3f3f3;
             border-radius: 50%;
-            margin-right: 5px;
-            animation: bounce 0.6s infinite alternate;
+            border-top: 4px solid #0B0052;
+            width: 50px;
+            height: 50px;
+            animation: spin 1.5s linear infinite;
         }
 
-        .loading-dots span:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .loading-dots span:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-
-        @keyframes bounce {
-            to {
-                opacity: 0.3;
-                transform: translateY(-6px);
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
             }
         }
 
-        #chat-box::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        #chat-box::-webkit-scrollbar-thumb {
-            background-color: rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
-        }
-
-        #chat-box::-webkit-scrollbar-track {
-            background-color: transparent;
-        }
-
-        .dark-mode {
-            background-color: #1E1E1E;
-            color: #FFFFFF;
-        }
-
-        .dark-mode .container {
-            background-color: #2C2C2C;
-        }
-
-        .dark-mode .header {
-            background-color: #333;
-            color: #DDD;
-        }
-
-        .dark-mode #chat-box {
-            background-color: #242424;
-        }
-
-        .dark-mode .input-area input {
-            background-color: #333;
-            color: #DDD;
-        }
-
-        .dark-mode .input-area button {
-            background-color: #555;
-        }
-
-        .toast {
-            visibility: hidden;
-            min-width: 250px;
-            margin-left: -125px;
-            background-color: #4A90E2;
-            color: white;
+        footer {
+            margin-top: 40px;
             text-align: center;
-            border-radius: 25px;
-            padding: 10px;
-            position: fixed;
-            z-index: 1;
-            left: 50%;
-            bottom: 30px;
-            font-size: 16px;
+            font-size: 0.9rem;
+            color: #888;
         }
 
-        .toast.show {
-            visibility: visible;
-            animation: fadein 0.5s, fadeout 0.5s 2.5s;
-        }
+        /* Responsive design */
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 2rem;
+            }
 
-        @keyframes fadein {
-            from {
-                bottom: 0;
-                opacity: 0;
+            .container {
+                padding: 15px;
             }
-            to {
-                bottom: 30px;
-                opacity: 1;
-            }
-        }
 
-        @keyframes fadeout {
-            from {
-                bottom: 30px;
-                opacity: 1;
+            .input-area textarea {
+                font-size: 0.9rem;
             }
-            to {
-                bottom: 0;
-                opacity: 0;
+
+            .button-area button {
+                padding: 10px 18px;
+                font-size: 0.9rem;
             }
         }
     </style>
 </head>
 <body>
+    <header>
+        <h1>EasySearch AI</h1>
+        <p>Ask your question below, and let our AI assist you!</p>
+    </header>
+
     <div class="container">
-        <div class="header">
-            <div class="menu">&#9776;</div>
-            <div class="center">EasySearch AI</div>
-            <div class="mode-toggle">
-                <select id="mode">
-                    <option value="light">Light Mode</option>
-                    <option value="dark">Dark Mode</option>
-                </select>
-            </div>
-        </div>
-
-        <div id="chat-box">
-            <!-- Chat bubbles will appear here -->
-        </div>
-
         <div class="input-area">
-            <input type="text" id="user-input" placeholder="Ask me anything...">
-            <button id="send-btn">Send</button>
+            <textarea id="query" placeholder="Type your question here..."></textarea>
+        </div>
+
+        <div class="button-area">
+            <button onclick="submitQuery()">Submit</button>
+        </div>
+
+        <div class="loader" id="loader"></div>
+
+        <div class="response-area" id="responseArea">
+            <h3>Response:</h3>
+            <p id="responseText"></p>
         </div>
     </div>
 
-    <div id="toast" class="toast">Session reset successfully</div>
+    <footer>
+        <p>Powered by EasySearch AI &middot; All Rights Reserved 2024</p>
+    </footer>
 
     <script>
-        const chatBox = document.getElementById('chat-box');
-        const sendBtn = document.getElementById('send-btn');
-        const userInput = document.getElementById('user-input');
-        const modeSelect = document.getElementById('mode');
-        const toast = document.getElementById('toast');
-
-        // Handle Send Button Click
-        sendBtn.addEventListener('click', function () {
-            const query = userInput.value.trim();
-
-            if (query !== '') {
-                // Add user query to the chat
-                addChatBubble(query, 'user-query');
-                userInput.value = '';  // Clear input
-
-                // Show loader while waiting for a response
-                addLoader();
-
-                // Send the query to the server
-                fetch('/query', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `query=${encodeURIComponent(query)}`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    removeLoader();
-                    addChatBubble(data.response, 'bot-response');
-                })
-                .catch(error => {
-                    removeLoader();
-                    addChatBubble("Error occurred while fetching the response. Please try again.", 'bot-response');
-                });
-            }
-        });
-
-        // Add chat bubble to the chat box
-        function addChatBubble(text, type) {
-            const bubble = document.createElement('div');
-            bubble.className = `chat ${type}`;
-            bubble.innerHTML = text;
-            chatBox.appendChild(bubble);
-            chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to the bottom
-        }
-
-        // Add loader animation
-        function addLoader() {
-            const loader = document.createElement('div');
-            loader.className = 'loading-dots';
-            loader.innerHTML = '<span></span><span></span><span></span>';
-            loader.id = 'loader';
-            chatBox.appendChild(loader);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        // Remove loader animation
-        function removeLoader() {
+        function submitQuery() {
+            const query = document.getElementById('query').value.trim();
             const loader = document.getElementById('loader');
-            if (loader) {
-                loader.remove();
+            const responseArea = document.getElementById('responseArea');
+            const responseText = document.getElementById('responseText');
+
+            if (query === '') {
+                alert('Please enter a query.');
+                return;
             }
-        }
 
-        // Handle mode switching
-        modeSelect.addEventListener('change', function () {
-            if (this.value === 'dark') {
-                document.body.classList.add('dark-mode');
-            } else {
-                document.body.classList.remove('dark-mode');
-            }
-        });
+            // Show loader while waiting for a response
+            loader.style.display = 'block';
+            responseArea.style.display = 'none';
 
-        // Handle session reset (not connected to a button in this example)
-        function resetSession() {
-            fetch('/reset', { method: 'POST' })
-                .then(response => response.json())
-                .then(data => {
-                    showToast(data.message);
-                });
-        }
-
-        // Show toast notification
-        function showToast(message) {
-            toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
+            // Send the query to Flask
+            fetch('/query', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `query=${encodeURIComponent(query)}`,
+            })
+            .then(response => response.json())
+            .then(data => {
+                loader.style.display = 'none';
+                responseArea.style.display = 'block';
+                responseText.innerHTML = data.response;
+            })
+            .catch(error => {
+                loader.style.display = 'none';
+                alert('An error occurred. Please try again.');
+            });
         }
     </script>
 </body>
