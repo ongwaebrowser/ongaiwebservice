@@ -18,7 +18,7 @@
 
         .container {
             width: 100%;
-            max-width: 700px;
+            max-width: 800px; /* Increased the max width */
             background-color: #fff;
             border-radius: 8px;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
@@ -29,15 +29,16 @@
         .chat-box {
             max-height: 500px;
             overflow-y: auto;
-            padding: 15px;
+            padding: 20px; /* Increased padding for larger text area */
             border-bottom: 1px solid #ddd;
+            font-size: 16px; /* Increased font size */
         }
 
         .chat {
-            padding: 10px;
-            margin: 5px 0;
+            padding: 15px; /* Increased padding */
+            margin: 10px 0;
             border-radius: 5px;
-            max-width: 80%;
+            max-width: 85%;
         }
 
         .user-query {
@@ -52,13 +53,14 @@
 
         .input-box {
             display: flex;
-            padding: 10px;
+            padding: 15px;
             border-top: 1px solid #ddd;
         }
 
         input {
             flex: 1;
-            padding: 10px;
+            padding: 15px; /* Increased padding for larger input field */
+            font-size: 16px; /* Larger font size */
             border: 1px solid #ddd;
             border-radius: 5px;
         }
@@ -67,10 +69,11 @@
             background-color: #0B0052;
             color: white;
             border: none;
-            padding: 10px;
+            padding: 15px; /* Larger button */
             margin-left: 10px;
             cursor: pointer;
             border-radius: 5px;
+            font-size: 16px;
         }
 
         button:hover {
@@ -146,6 +149,31 @@
             background-color: #555;
             color: white;
         }
+
+        .bot-response p {
+            margin: 0;
+        }
+
+        .bot-response h1, .bot-response h2, .bot-response h3 {
+            margin: 0;
+        }
+
+        /* Responsive design for mobile devices */
+        @media (max-width: 768px) {
+            .container {
+                max-width: 100%;
+                margin: 10px;
+            }
+
+            input, button {
+                font-size: 14px;
+                padding: 12px;
+            }
+
+            .chat-box {
+                font-size: 14px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -189,7 +217,8 @@
                 .then(response => response.json())
                 .then(data => {
                     removeLoader(); // Remove loading dots
-                    animateResponse(data.response); // Animate real bot response from Flask
+                    const sanitizedResponse = sanitizeHTML(data.response); // Sanitize and render HTML
+                    animateResponse(sanitizedResponse); // Animate real bot response from Flask
                 })
                 .catch(error => {
                     removeLoader();
@@ -225,23 +254,30 @@
             }
         }
 
-        // Animate the bot response with typing effect
-        function animateResponse(text) {
+        // Animate the bot response with typing effect and render HTML
+        function animateResponse(htmlContent) {
             let i = 0;
-            const speed = 50; // Speed of typing animation (ms)
+            const speed = 30; // Speed of typing animation (ms)
             const botResponseBubble = document.createElement('div');
             botResponseBubble.className = 'chat bot-response';
             chatBox.appendChild(botResponseBubble);
 
             function typeWriter() {
-                if (i < text.length) {
-                    botResponseBubble.innerHTML += text.charAt(i);
+                if (i < htmlContent.length) {
+                    botResponseBubble.innerHTML += htmlContent.charAt(i);
                     i++;
                     chatBox.scrollTop = chatBox.scrollHeight;
                     setTimeout(typeWriter, speed);
                 }
             }
             typeWriter();
+        }
+
+        // Sanitize and render HTML content in the bot's response
+        function sanitizeHTML(html) {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            return tempDiv.innerHTML; // Returns clean HTML string
         }
 
         // Show toast notification
