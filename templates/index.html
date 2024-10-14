@@ -14,12 +14,12 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            transition: background-color 0.3s, color 0.3s; /* Smooth transition */
+            transition: background-color 0.3s, color 0.3s;
         }
 
         .container {
             width: 100%;
-            max-width: 800px; /* Increased the max width */
+            max-width: 800px;
             background-color: #fff;
             border-radius: 8px;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
@@ -34,7 +34,6 @@
             padding: 20px;
             border-bottom: 1px solid #ddd;
             font-size: 16px;
-            color: #000; /* Dark mode fix */
         }
 
         .chat {
@@ -168,11 +167,6 @@
             background-color: #555;
         }
 
-        .bot-response p, .bot-response h1, .bot-response h2, .bot-response h3 {
-            margin: 0;
-            color: inherit; /* Ensures the text inherits the correct color in dark mode */
-        }
-
         /* Responsive design for mobile devices */
         @media (max-width: 768px) {
             .container {
@@ -232,8 +226,8 @@
                 .then(response => response.json())
                 .then(data => {
                     removeLoader(); // Remove loading dots
-                    const sanitizedResponse = sanitizeHTML(data.response); // Sanitize and render HTML
-                    animateResponse(sanitizedResponse); // Animate real bot response from Flask
+                    const botResponseHTML = data.response; // HTML content from Flask
+                    animateResponse(botResponseHTML); // Animate real bot response as HTML
                 })
                 .catch(error => {
                     removeLoader();
@@ -246,7 +240,7 @@
         function addChatBubble(text, type) {
             const bubble = document.createElement('div');
             bubble.className = `chat ${type}`;
-            bubble.innerHTML = text;
+            bubble.innerHTML = text; // For user text, we directly insert as plain text
             chatBox.appendChild(bubble);
             chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to the bottom
         }
@@ -269,7 +263,7 @@
             }
         }
 
-        // Animate the bot response with typing effect and render HTML
+        // Animate the bot response with typing effect and render as HTML
         function animateResponse(htmlContent) {
             let i = 0;
             const speed = 30; // Speed of typing animation (ms)
@@ -279,20 +273,13 @@
 
             function typeWriter() {
                 if (i < htmlContent.length) {
-                    botResponseBubble.innerHTML += htmlContent.charAt(i);
+                    botResponseBubble.innerHTML = htmlContent.substring(0, i + 1); // Inject HTML progressively
                     i++;
                     chatBox.scrollTop = chatBox.scrollHeight;
                     setTimeout(typeWriter, speed);
                 }
             }
             typeWriter();
-        }
-
-        // Sanitize the response to render proper HTML without unsafe tags
-        function sanitizeHTML(html) {
-            const div = document.createElement('div');
-            div.innerHTML = html;
-            return div.innerHTML; // Safely returning the sanitized HTML content
         }
 
         // Show toast notification
