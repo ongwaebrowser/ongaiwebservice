@@ -3,217 +3,383 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="EasySearch AI - Your Intelligent AI Assistant">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>EasySearch AI</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #f9f9f9;
+        /* Reset basic styles */
+        * {
             margin: 0;
             padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
             color: #333;
-        }
-
-        header {
-            text-align: center;
             padding: 20px;
-        }
-
-        header h1 {
-            font-size: 2.5rem;
-            color: #0B0052;
-            margin-bottom: 10px;
-        }
-
-        header p {
-            font-size: 1.1rem;
-            color: #555;
         }
 
         .container {
-            width: 90%;
-            max-width: 700px;
+            max-width: 800px;
+            margin: 0 auto;
             background-color: #fff;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
         }
 
-        .input-area {
+        /* Header styles */
+        .header {
             display: flex;
-            flex-direction: column;
-            margin-bottom: 20px;
-        }
-
-        .input-area textarea {
-            width: 100%;
+            justify-content: space-between;
+            align-items: center;
             padding: 15px;
-            font-size: 1rem;
-            border-radius: 8px;
-            border: 2px solid #ddd;
-            outline: none;
-            transition: border-color 0.3s;
-            min-height: 120px;
-            resize: none;
+            background-color: #fff;
+            color: #0b0052;
+            border-bottom: 2px solid #e0e0e0;
+            position: relative;
         }
 
-        .input-area textarea:focus {
-            border-color: #0B0052;
+        /* Center the EasySearch AI dropdown */
+        .header .center {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 20px;
+            color: #0b0052;
+            cursor: pointer;
         }
 
-        .button-area {
-            text-align: right;
-        }
-
-        .button-area button {
-            padding: 12px 20px;
-            font-size: 1rem;
-            color: #fff;
-            background-color: #0B0052;
+        .header select {
+            font-size: 18px;
+            padding: 5px;
             border: none;
+            background: transparent;
+            color: #0b0052;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Menu button on the right */
+        .header .menu {
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: transform 0.2s ease;
+        }
+
+        .header .menu:hover {
+            transform: rotate(90deg);
+        }
+
+        /* Chat box container */
+        #chat-box {
+            height: 500px;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: #f9fafb;
+        }
+
+        /* Chat bubble styling */
+        .chat {
+            margin-bottom: 15px;
+            padding: 12px 20px;
+            border-radius: 25px;
+            max-width: 75%;
+            font-size: 16px;
+            line-height: 1.6;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .chat.user-query {
+            background-color: #4A90E2;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+            border-bottom-right-radius: 0;
+        }
+
+        .chat.bot-response {
+            background-color: #f0f0f0;
+            color: #333;
+            border-bottom-left-radius: 0;
+            width: 75%;  /* Adjusted width for better reading experience */
+            margin-left: 10px;
+        }
+
+        /* Copy button styling */
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background-color: #4A90E2;
+            color: white;
+            border: none;
+            padding: 5px 10px;
             border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            font-size: 14px;
         }
 
-        .button-area button:hover {
-            background-color: #3a007a;
+        .copy-btn:hover {
+            background-color: #357ABD;
         }
 
-        .response-area {
-            display: none;
-            margin-top: 20px;
+        /* Input area styling */
+        .input-area {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background-color: #fff;
+            border-top: 1px solid #e0e0e0;
         }
 
-        .response-area h3 {
-            font-size: 1.3rem;
+        .input-area input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ccc;
+            border-radius: 50px;
+            outline: none;
+            font-size: 16px;
+            background-color: #f0f0f0;
             color: #333;
+            transition: all 0.3s ease;
         }
 
-        .response-area p {
-            font-size: 1rem;
-            line-height: 1.5;
-            color: #666;
+        .input-area input:focus {
+            border-color: #4a90e2;
+            background-color: white;
         }
 
-        .loader {
-            display: none;
-            margin: 20px auto;
-            border: 4px solid #f3f3f3;
+        .input-area button {
+            background-color: #4A90E2;
+            border: none;
+            color: white;
+            padding: 12px 16px;
             border-radius: 50%;
-            border-top: 4px solid #0B0052;
-            width: 50px;
-            height: 50px;
-            animation: spin 1.5s linear infinite;
+            margin-left: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease;
         }
 
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-            100% {
-                transform: rotate(360deg);
+        .input-area button:hover {
+            background-color: #357ABD;
+        }
+
+        /* Loader animation (3 dots) */
+        .loading-dots {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            padding-left: 20px;
+        }
+
+        .loading-dots span {
+            width: 8px;
+            height: 8px;
+            background-color: #4A90E2;
+            border-radius: 50%;
+            margin-right: 5px;
+            animation: bounce 0.6s infinite alternate;
+        }
+
+        .loading-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loading-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            to {
+                opacity: 0.3;
+                transform: translateY(-6px);
             }
         }
 
-        footer {
-            margin-top: 40px;
+        /* Scrollbar styling for chat box */
+        #chat-box::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #chat-box::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        #chat-box::-webkit-scrollbar-track {
+            background-color: transparent;
+        }
+
+        /* Dark mode styles */
+        .dark-mode {
+            background-color: #1E1E1E;
+            color: #FFFFFF;
+        }
+
+        .dark-mode .container {
+            background-color: #2C2C2C;
+        }
+
+        .dark-mode .header {
+            background-color: #333;
+            color: #DDD;
+        }
+
+        .dark-mode #chat-box {
+            background-color: #242424;
+        }
+
+        .dark-mode .input-area input {
+            background-color: #333;
+            color: #DDD;
+        }
+
+        .dark-mode .input-area button {
+            background-color: #555;
+        }
+
+        /* Toast Notification styling */
+        .toast {
+            visibility: hidden;
+            min-width: 250px;
+            margin-left: -125px;
+            background-color: #4A90E2;
+            color: white;
             text-align: center;
-            font-size: 0.9rem;
-            color: #888;
+            border-radius: 25px;
+            padding: 10px;
+            position: fixed;
+            z-index: 1;
+            left: 50%;
+            bottom: 30px;
+            font-size: 16px;
         }
 
-        /* Responsive design */
-        @media (max-width: 600px) {
-            header h1 {
-                font-size: 2rem;
-            }
+        .toast.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
 
-            .container {
-                padding: 15px;
+        @keyframes fadein {
+            from {
+                bottom: 0;
+                opacity: 0;
             }
-
-            .input-area textarea {
-                font-size: 0.9rem;
+            to {
+                bottom: 30px;
+                opacity: 1;
             }
+        }
 
-            .button-area button {
-                padding: 10px 18px;
-                font-size: 0.9rem;
+        @keyframes fadeout {
+            from {
+                bottom: 30px;
+                opacity: 1;
+            }
+            to {
+                bottom: 0;
+                opacity: 0;
             }
         }
     </style>
-</head>
-<body>
-    <header>
-        <h1>EasySearch AI</h1>
-        <p>Ask your question below, and let our AI assist you!</p>
-    </header>
-
-    <div class="container">
-        <div class="input-area">
-            <textarea id="query" placeholder="Type your question here..."></textarea>
-        </div>
-
-        <div class="button-area">
-            <button onclick="submitQuery()">Submit</button>
-        </div>
-
-        <div class="loader" id="loader"></div>
-
-        <div class="response-area" id="responseArea">
-            <h3>Response:</h3>
-            <p id="responseText"></p>
-        </div>
-    </div>
-
-    <footer>
-        <p>Powered by EasySearch AI &middot; All Rights Reserved 2024</p>
-    </footer>
-
     <script>
-        function submitQuery() {
-            const query = document.getElementById('query').value.trim();
-            const loader = document.getElementById('loader');
-            const responseArea = document.getElementById('responseArea');
-            const responseText = document.getElementById('responseText');
+        function toggleMode() {
+            document.body.classList.toggle('dark-mode');
+        }
 
-            if (query === '') {
-                alert('Please enter a query.');
-                return;
-            }
+        function sendQuery() {
+            const queryInput = document.getElementById('query');
+            const userQuery = queryInput.value;
+            const chatBox = document.getElementById('chat-box');
+            const sendButton = document.getElementById('send-button');
 
-            // Show loader while waiting for a response
-            loader.style.display = 'block';
-            responseArea.style.display = 'none';
+            if (!userQuery) return;
 
-            // Send the query to Flask
-            fetch('/query', {
+            // Add user's query to chat
+            const userMessage = `<div class='chat user-query'>${userQuery}</div>`;
+            chatBox.innerHTML += userMessage;
+            chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to bottom
+
+            // Clear input and disable the send button
+            queryInput.value = '';
+            sendButton.disabled = true;
+
+            // Simulate loading dots
+            const loadingDots = `
+                <div class='chat bot-response'>
+                    <div class='loading-dots'>
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+            `;
+            chatBox.innerHTML += loadingDots;
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // Call API
+            fetch(`/query`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Content-Type': 'application/x-www-form-urlencoded'
                 },
-                body: `query=${encodeURIComponent(query)}`,
+                body: new URLSearchParams({
+                    'query': userQuery
+                })
             })
             .then(response => response.json())
             .then(data => {
-                loader.style.display = 'none';
-                responseArea.style.display = 'block';
-                responseText.innerHTML = data.response;
+                // Replace loading dots with response
+                const responseMessage = chatBox.querySelector('.loading-dots').parentElement;
+                responseMessage.innerHTML = `${data.response} <button class="copy-btn" onclick="copyToClipboard('${data.response}')">Copy</button>`;
             })
             .catch(error => {
-                loader.style.display = 'none';
-                alert('An error occurred. Please try again.');
+                showToast("An error occurred. Please try again.");
+                chatBox.querySelector('.loading-dots').parentElement.remove();
             });
         }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("Response copied!");
+            }).catch(() => {
+                showToast("Failed to copy.");
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.classList.add('toast');
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => document.body.removeChild(toast), 500);
+            }, 3000);
+        }
     </script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="menu" onclick="toggleMode()">☰</div>
+            <div class="center">
+                <select>
+                    <option value="EasySearch">EasySearch v.1.0</option>
+                </select>
+            </div>
+        </div>
+        <div id="chat-box"></div>
+        <div class="input-area">
+            <input type="text" id="query" placeholder="Ask something..." oninput="document.getElementById('send-button').disabled = !this.value.trim()">
+            <button id="send-button" onclick="sendQuery()" disabled>⏎</button>
+        </div>
+    </div>
 </body>
 </html>
