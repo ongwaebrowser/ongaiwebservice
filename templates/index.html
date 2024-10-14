@@ -105,12 +105,13 @@
             border-bottom-left-radius: 0;
             width: 75%;  /* Adjusted width for better reading experience */
             margin-left: 10px;
+            padding-bottom: 40px; /* Added space at the bottom for the copy button */
         }
 
         /* Copy button styling */
         .copy-btn {
             position: absolute;
-            top: 10px;
+            bottom: 10px; /* Positioned the button at the bottom */
             right: 15px;
             background-color: #4A90E2;
             color: white;
@@ -324,62 +325,59 @@
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
-                body: new URLSearchParams({
-                    'query': userQuery
-                })
+                body: new URLSearchParams({ query: userQuery })
             })
             .then(response => response.json())
             .then(data => {
-                // Replace loading dots with response
-                const responseMessage = chatBox.querySelector('.loading-dots').parentElement;
-                responseMessage.innerHTML = `${data.response} <button class="copy-btn" onclick="copyToClipboard('${data.response}')">Copy</button>`;
+                // Remove loading dots and add bot response
+                const botResponse = `<div class='chat bot-response'>
+                                        ${data.response}
+                                        <button class='copy-btn' onclick='copyToClipboard(this)'>Copy</button>
+                                    </div>`;
+                chatBox.innerHTML = chatBox.innerHTML.replace(loadingDots, botResponse);
+                chatBox.scrollTop = chatBox.scrollHeight;
+
+                // Enable the send button again
+                sendButton.disabled = false;
             })
             .catch(error => {
-                showToast("An error occurred. Please try again.");
-                chatBox.querySelector('.loading-dots').parentElement.remove();
+                console.error('Error:', error);
+                chatBox.innerHTML += `<div class='chat bot-response'>Sorry, something went wrong.</div>`;
+                sendButton.disabled = false;
             });
         }
 
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                showToast("Response copied!");
-            }).catch(() => {
-                showToast("Failed to copy.");
+        function copyToClipboard(button) {
+            const textToCopy = button.parentElement.textContent.trim();
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                // Show toast notification
+                const toast = document.getElementById('toast');
+                toast.className = 'toast show';
+                setTimeout(() => { toast.className = toast.className.replace('show', ''); }, 3000);
             });
-        }
-
-        function showToast(message) {
-            const toast = document.createElement('div');
-            toast.classList.add('toast');
-            toast.textContent = message;
-            document.body.appendChild(toast);
-
-            setTimeout(() => {
-                toast.classList.add('show');
-            }, 100);
-
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => document.body.removeChild(toast), 500);
-            }, 3000);
         }
     </script>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="menu" onclick="toggleMode()">☰</div>
             <div class="center">
                 <select>
-                    <option value="EasySearch">EasySearch v.1.0</option>
+                    <option>EasySearch AI</option>
                 </select>
             </div>
+            <div class="menu" onclick="toggleMode()">☰</div>
         </div>
+
         <div id="chat-box"></div>
+
         <div class="input-area">
-            <input type="text" id="query" placeholder="Ask something..." oninput="document.getElementById('send-button').disabled = !this.value.trim()">
-            <button id="send-button" onclick="sendQuery()" disabled>⏎</button>
+            <input type="text" id="query" placeholder="Type your question here...">
+            <button id="send-button" onclick="sendQuery()">➤</button>
         </div>
+
+        <!-- Toast notification for copy -->
+        <div id="toast" class="toast">Copied to clipboard!</div>
     </div>
 </body>
 </html>
