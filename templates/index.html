@@ -28,7 +28,6 @@
             overflow: hidden;
         }
 
-        /* Header styles */
         .header {
             display: flex;
             justify-content: space-between;
@@ -40,7 +39,6 @@
             position: relative;
         }
 
-        /* Center the EasySearch AI dropdown */
         .header .center {
             position: absolute;
             left: 50%;
@@ -58,9 +56,13 @@
             color: #0b0052;
             font-weight: bold;
             cursor: pointer;
+            transition: color 0.3s ease;
         }
 
-        /* Menu button on the right */
+        .dark-mode .header select {
+            color: #fff;
+        }
+
         .header .menu {
             cursor: pointer;
             font-size: 1.2rem;
@@ -71,7 +73,6 @@
             transform: rotate(90deg);
         }
 
-        /* Chat box container */
         #chat-box {
             height: 500px;
             overflow-y: auto;
@@ -79,7 +80,6 @@
             background-color: #f9fafb;
         }
 
-        /* Chat bubble styling */
         .chat {
             margin-bottom: 15px;
             padding: 12px 20px;
@@ -103,11 +103,10 @@
             background-color: #f0f0f0;
             color: #333;
             border-bottom-left-radius: 0;
-            width: 75%;  /* Adjusted width for better reading experience */
+            width: 75%;
             margin-left: 10px;
         }
 
-        /* Copy button styling */
         .copy-btn {
             position: absolute;
             top: 10px;
@@ -125,7 +124,6 @@
             background-color: #357ABD;
         }
 
-        /* Input area styling */
         .input-area {
             display: flex;
             align-items: center;
@@ -202,7 +200,6 @@
             }
         }
 
-        /* Scrollbar styling for chat box */
         #chat-box::-webkit-scrollbar {
             width: 8px;
         }
@@ -216,7 +213,6 @@
             background-color: transparent;
         }
 
-        /* Dark mode styles */
         .dark-mode {
             background-color: #1E1E1E;
             color: #FFFFFF;
@@ -244,7 +240,6 @@
             background-color: #555;
         }
 
-        /* Toast Notification styling */
         .toast {
             visibility: hidden;
             min-width: 250px;
@@ -288,84 +283,124 @@
             }
         }
     </style>
-    <script>
-        function toggleMode() {
-            document.body.classList.toggle('dark-mode');
-        }
-
-        function sendQuery() {
-            const queryInput = document.getElementById('query');
-            const userQuery = queryInput.value;
-            const chatBox = document.getElementById('chat-box');
-            const sendButton = document.getElementById('send-button');
-
-            if (!userQuery) return;
-
-            // Add user's query to chat
-            const userMessage = `<div class='chat user-query'>${userQuery}</div>`;
-            chatBox.innerHTML += userMessage;
-            chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to bottom
-
-            // Clear input and disable the send button
-            queryInput.value = '';
-            sendButton.disabled = true;
-
-            // Simulate loading dots
-            const loadingDots = `
-                <div class='chat bot-response'>
-                    <div class='loading-dots'>
-                        <span></span><span></span><span></span>
-                    </div>
-                </div>
-            `;
-            chatBox.innerHTML += loadingDots;
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-            // Call API
-            fetch(`/query`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ query: userQuery }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Replace loading dots with actual response
-                const botMessages = document.querySelectorAll('.loading-dots');
-                botMessages[botMessages.length - 1].parentNode.innerHTML = data.response;
-                chatBox.scrollTop = chatBox.scrollHeight; // Scroll to bottom
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            })
-            .finally(() => {
-                sendButton.disabled = false;  // Re-enable the send button
-            });
-        }
-    </script>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="menu" onclick="toggleMode()">☰</div>
-            <div class="center">
-                <select id="model-select">
-                    <option>EasySearch AI</option>
-                    <option>EasySearch v2</option>
+            <div class="menu">&#9776;</div>
+            <div class="center">EasySearch AI</div>
+            <div class="mode-toggle">
+                <select id="mode">
+                    <option value="light">Light Mode</option>
+                    <option value="dark">Dark Mode</option>
                 </select>
             </div>
         </div>
 
-        <div id="chat-box"></div>
-
-        <div class="input-area">
-            <input type="text" id="query" placeholder="Enter your query here...">
-            <button id="send-button" onclick="sendQuery()">➤</button>
+        <div id="chat-box">
+            <!-- Chat bubbles will appear here -->
         </div>
 
-        <!-- Toast Notification -->
-        <div id="toast" class="toast">Copied to clipboard!</div>
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="Ask me anything...">
+            <button id="send-btn">Send</button>
+        </div>
     </div>
+
+    <div id="toast" class="toast">Session reset successfully</div>
+
+    <script>
+        const chatBox = document.getElementById('chat-box');
+        const sendBtn = document.getElementById('send-btn');
+        const userInput = document.getElementById('user-input');
+        const modeSelect = document.getElementById('mode');
+        const toast = document.getElementById('toast');
+
+        // Handle Send Button Click
+        sendBtn.addEventListener('click', function () {
+            const query = userInput.value.trim();
+
+            if (query !== '') {
+                // Add user query to the chat
+                addChatBubble(query, 'user-query');
+                userInput.value = '';  // Clear input
+
+                // Show loader while waiting for a response
+                addLoader();
+
+                // Send the query to the server
+                fetch('/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `query=${encodeURIComponent(query)}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    removeLoader();
+                    addChatBubble(data.response, 'bot-response');
+                })
+                .catch(error => {
+                    removeLoader();
+                    addChatBubble("Error occurred while fetching the response. Please try again.", 'bot-response');
+                });
+            }
+        });
+
+        // Add chat bubble to the chat box
+        function addChatBubble(text, type) {
+            const bubble = document.createElement('div');
+            bubble.className = `chat ${type}`;
+            bubble.innerHTML = text;
+            chatBox.appendChild(bubble);
+            chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to the bottom
+        }
+
+        // Add loader animation
+        function addLoader() {
+            const loader = document.createElement('div');
+            loader.className = 'loading-dots';
+            loader.innerHTML = '<span></span><span></span><span></span>';
+            loader.id = 'loader';
+            chatBox.appendChild(loader);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Remove loader animation
+        function removeLoader() {
+            const loader = document.getElementById('loader');
+            if (loader) {
+                loader.remove();
+            }
+        }
+
+        // Handle mode switching
+        modeSelect.addEventListener('change', function () {
+            if (this.value === 'dark') {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        });
+
+        // Handle session reset (not connected to a button in this example)
+        function resetSession() {
+            fetch('/reset', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    showToast(data.message);
+                });
+        }
+
+        // Show toast notification
+        function showToast(message) {
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    </script>
 </body>
 </html>
