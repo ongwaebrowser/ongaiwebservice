@@ -53,6 +53,7 @@
         .bot-response {
             background-color: #e6ffe6;
             align-self: flex-end;
+            position: relative;
         }
 
         .code-block {
@@ -314,29 +315,57 @@
             }
         }
 
-        // Process bot response by rendering text and code
+        // Process bot response by rendering text and code with streaming effect
         function processBotResponse(response) {
             const botResponseBubble = document.createElement('div');
             botResponseBubble.className = 'chat bot-response';
-
-            const codeRegex = /```([\s\S]+?)```/g;
-            const parts = response.split(codeRegex);
-
-            parts.forEach((part, index) => {
-                if (index % 2 === 0) {
-                    // Regular text
-                    botResponseBubble.innerHTML += `<p>${part}</p>`;
-                } else {
-                    // Code block
-                    botResponseBubble.innerHTML += `<pre class="code-block">${escapeHTML(part)}</pre>`;
-                }
-            });
-
             chatBox.appendChild(botResponseBubble);
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            // Add "Copy" button
-            addCopyButton(botResponseBubble);
+            // Add "Copy" button (will be appended after streaming)
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'copy-btn';
+            copyBtn.innerText = 'Copy';
+            copyBtn.style.display = 'none';  // Hide initially
+            botResponseBubble.appendChild(copyBtn);
+
+            // Stream the response text
+            let currentIndex = 0;
+            const speed = 30;  // milliseconds per character
+
+            function typeCharacter() {
+                if (currentIndex < response.length) {
+                    const char = response[currentIndex];
+                    if (char === '`' && response.substr(currentIndex, 3) === '```') {
+                        // Handle code block
+                        const endIndex = response.indexOf('```', currentIndex + 3);
+                        if (endIndex !== -1) {
+                            const codeContent = response.substring(currentIndex + 3, endIndex);
+                            const pre = document.createElement('pre');
+                            pre.className = 'code-block';
+                            pre.innerText = codeContent;
+                            botResponseBubble.appendChild(pre);
+                            currentIndex = endIndex + 3;
+                            setTimeout(typeCharacter, speed);
+                            return;
+                        }
+                    }
+                    // Regular character
+                    if (!botResponseBubble.lastChild || botResponseBubble.lastChild.tagName !== 'P') {
+                        const p = document.createElement('p');
+                        botResponseBubble.appendChild(p);
+                    }
+                    botResponseBubble.lastChild.innerHTML += escapeHTML(char);
+                    currentIndex++;
+                    setTimeout(typeCharacter, speed);
+                } else {
+                    // After streaming is done, show the copy button
+                    copyBtn.style.display = 'inline-block';
+                    addCopyFunctionality(botResponseBubble, copyBtn);
+                }
+            }
+
+            typeCharacter();
         }
 
         // Escape HTML to prevent XSS
@@ -346,15 +375,12 @@
             return div.innerHTML;
         }
 
-        // Add copy button after each AI response
-        function addCopyButton(chatElement) {
-            const copyBtn = document.createElement('button');
-            copyBtn.className = 'copy-btn';
-            copyBtn.innerText = 'Copy';
-            chatElement.appendChild(copyBtn);
-
+        // Add copy functionality to the copy button
+        function addCopyFunctionality(chatElement, copyBtn) {
             copyBtn.addEventListener('click', () => {
-                const textToCopy = chatElement.innerText;  // Get the full text content
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = chatElement.innerHTML;
+                const textToCopy = tempDiv.innerText;  // Get the full text content
                 navigator.clipboard.writeText(textToCopy).then(() => {
                     showToast('Copied to clipboard!');
                 }).catch(() => {
