@@ -41,6 +41,7 @@
             margin: 10px 0;
             border-radius: 5px;
             max-width: 85%;
+            position: relative;
         }
 
         .user-query {
@@ -51,6 +52,16 @@
         .bot-response {
             background-color: #e6ffe6;
             align-self: flex-end;
+        }
+
+        .code-block {
+            background-color: #2e2e2e;
+            color: #f8f8f8;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            overflow-x: auto;
+            white-space: pre-wrap;
         }
 
         .input-box {
@@ -167,6 +178,33 @@
             background-color: #555;
         }
 
+        /* Disclaimer style */
+        .disclaimer {
+            font-size: 12px;
+            color: #777;
+            margin-top: 5px;
+        }
+
+        /* Copy button style */
+        .copy-btn {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 8px 16px;
+            background-color: #0B0052;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            position: absolute;
+            right: 15px;
+            bottom: 10px;
+        }
+
+        .copy-btn:hover {
+            background-color: #1500a3;
+        }
+
         /* Responsive design for mobile devices */
         @media (max-width: 768px) {
             .container {
@@ -182,6 +220,11 @@
             .chat-box {
                 font-size: 14px;
             }
+
+            .copy-btn {
+                font-size: 12px;
+                padding: 6px 12px;
+            }
         }
     </style>
 </head>
@@ -191,6 +234,10 @@
         <div class="input-box">
             <input type="text" id="user-input" placeholder="Ask EasySearch AI...">
             <button id="send-btn">⏎</button>
+        </div>
+        <!-- Disclaimer below the input box -->
+        <div class="disclaimer">
+            <p>EasySearch AI can make mistakes. Consider double-checking important information.</p>
         </div>
         <div id="toast" class="toast"></div>
         <div class="menu">🌙</div>
@@ -273,16 +320,47 @@
 
             function typeWriter() {
                 if (i < htmlContent.length) {
-                    botResponseBubble.innerHTML = htmlContent.substring(0, i + 1); // Inject HTML progressively
+                    botResponseBubble.innerHTML += htmlContent.charAt(i);
                     i++;
                     chatBox.scrollTop = chatBox.scrollHeight;
                     setTimeout(typeWriter, speed);
+                } else {
+                    // Format code blocks after typing effect completes
+                    formatCodeBlocks(botResponseBubble);
+                    addCopyButton(botResponseBubble); // Add copy button after the response
                 }
             }
-            typeWriter();
+            typeWriter(); // Start typing effect
         }
 
-        // Show toast notification
+        // Function to format code blocks
+        function formatCodeBlocks(chatElement) {
+            const content = chatElement.innerHTML;
+            const codeRegex = /```([\s\S]+?)```/g;
+            const formattedContent = content.replace(codeRegex, (match, code) => {
+                return `<pre class="code-block"><code>${code}</code></pre>`;
+            });
+            chatElement.innerHTML = formattedContent;
+        }
+
+        // Add copy button after each AI response
+        function addCopyButton(chatElement) {
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'copy-btn';
+            copyBtn.innerText = 'Copy Answer';
+            chatElement.appendChild(copyBtn);
+
+            copyBtn.addEventListener('click', () => {
+                const textToCopy = chatElement.innerText; // Get the full text content
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    showToast('Copied to clipboard!');
+                }).catch(err => {
+                    showToast('Failed to copy.');
+                });
+            });
+        }
+
+        // Show toast message
         function showToast(message) {
             toast.textContent = message;
             toast.classList.add('show');
