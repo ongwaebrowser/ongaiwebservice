@@ -35,6 +35,8 @@
             padding: 20px;
             border-bottom: 1px solid #ddd;
             font-size: 16px;
+            display: flex;
+            flex-direction: column;
         }
 
         .chat {
@@ -43,6 +45,7 @@
             border-radius: 5px;
             max-width: 85%;
             word-wrap: break-word;
+            position: relative;
         }
 
         .user-query {
@@ -64,7 +67,7 @@
             font-family: monospace;
             overflow-x: auto;
             white-space: pre-wrap;
-            margin: 10px 0;
+            margin-top: 10px;
         }
 
         .input-box {
@@ -316,118 +319,109 @@
             }
         }
 
-        // Process bot response by rendering text and code with streaming effect
+        // Process bot response by rendering HTML with streaming effect
         function processBotResponse(response) {
             const botResponseBubble = document.createElement('div');
             botResponseBubble.className = 'chat bot-response';
             chatBox.appendChild(botResponseBubble);
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            // Add "Copy" button (will be appended after streaming)
-            const copyBtn = document.createElement('button');
-            copyBtn.className = 'copy-btn';
-            copyBtn.innerText = 'Copy';
-            copyBtn.style.display = 'none';  // Hide initially
-            botResponseBubble.appendChild(copyBtn);
+            // Parse the HTML response
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(response, 'text/html');
+            const elements = Array.from(doc.body.childNodes);
 
-            // Tokenize the response into tags and text
-            const tokens = tokenizeHTML(response);
-            let currentTokenIndex = 0;
-            const speed = 30;  // milliseconds per character
-
-            function appendNextToken() {
-                if (currentTokenIndex >= tokens.length) {
-                    // After streaming is done, show the copy button
-                    copyBtn.style.display = 'inline-block';
-                    addCopyFunctionality(botResponseBubble, copyBtn);
-                    return;
-                }
-
-                const token = tokens[currentTokenIndex];
-                currentTokenIndex++;
-
-                if (token.type === 'tag') {
-                    // Append tag directly
-                    botResponseBubble.innerHTML += token.content;
-                    chatBox.scrollTop = chatBox.scrollHeight;
-                    appendNextToken();  // Immediately process the next token
-                } else if (token.type === 'text') {
-                    // Stream text character by character
-                    let charIndex = 0;
-
-                    function appendChar() {
-                        if (charIndex < token.content.length) {
-                            const char = token.content.charAt(charIndex);
-                            // If the last child is a <p> or <pre>, append to it
-                            let lastElement = botResponseBubble.lastElementChild;
-                            if (!lastElement || (lastElement.tagName !== 'P' && lastElement.tagName !== 'PRE')) {
-                                // Create a new <p> if needed
-                                const p = document.createElement('p');
-                                botResponseBubble.appendChild(p);
+            // Function to process nodes sequentially
+            async function processNodes(nodes, parentElement) {
+                for (const node of nodes) {
+                    if (node.nodeType === Node.TEXT_NODE) {
+                        await typeText(node.textContent, parentElement);
+                    } else if (node.nodeType === Node.ELEMENT_NODE) {
+                        if (node.tagName.toLowerCase() === 'pre') {
+                            // Handle code blocks
+                            const pre = document.createElement('pre');
+                            pre.className = 'code-block';
+                            parentElement.appendChild(pre);
+                            await typeText(node.textContent, pre);
+                        } else if (node.tagName.toLowerCase() === 'p') {
+                            // Handle paragraphs
+                            const p = document.createElement('p');
+                            parentElement.appendChild(p);
+                            await typeText(node.textContent, p);
+                        } else if (node.tagName.toLowerCase() === 'ul' || node.tagName.toLowerCase() === 'ol') {
+                            // Handle lists
+                            const list = document.createElement(node.tagName.toLowerCase());
+                            parentElement.appendChild(list);
+                            const listItems = Array.from(node.querySelectorAll('li'));
+                            for (const li of listItems) {
+                                const listItem = document.createElement('li');
+                                list.appendChild(listItem);
+                                await typeText(li.textContent, listItem);
                             }
-
-                            lastElement = botResponseBubble.lastElementChild;
-                            lastElement.innerHTML += escapeHTML(char);
-                            chatBox.scrollTop = chatBox.scrollHeight;
-                            charIndex++;
-                            setTimeout(appendChar, speed);
+                        } else if (node.tagName.toLowerCase() === 'h1' || node.tagName.toLowerCase() === 'h2' ||
+                                   node.tagName.toLowerCase() === 'h3' || node.tagName.toLowerCase() === 'h4' ||
+                                   node.tagName.toLowerCase() === 'h5' || node.tagName.toLowerCase() === 'h6') {
+                            // Handle headings
+                            const heading = document.createElement(node.tagName.toLowerCase());
+                            parentElement.appendChild(heading);
+                            await typeText(node.textContent, heading);
                         } else {
-                            appendNextToken();  // Process the next token after finishing current text
+                            // Handle other elements by cloning and processing their children
+                            const newElement = document.createElement(node.tagName.toLowerCase());
+                            // Copy attributes if needed
+                            Array.from(node.attributes).forEach(attr => {
+                                newElement.setAttribute(attr.name, attr.value);
+                            });
+                            parentElement.appendChild(newElement);
+                            await processNodes(Array.from(node.childNodes), newElement);
+                        }
+                    }
+                }
+            }
+
+            // Function to type text with delay
+            function typeText(text, element) {
+                return new Promise((resolve) => {
+                    let index = 0;
+                    const speed = 30;  // milliseconds per character
+
+                    function addChar() {
+                        if (index < text.length) {
+                            const char = text.charAt(index);
+                            element.innerHTML += escapeHTML(char);
+                            chatBox.scrollTop = chatBox.scrollHeight;
+                            index++;
+                            setTimeout(addChar, speed);
+                        } else {
+                            resolve();
                         }
                     }
 
-                    appendChar();
-                }
-            }
-
-            appendNextToken();
-        }
-
-        // Simple HTML tokenizer
-        function tokenizeHTML(html) {
-            const tokens = [];
-            const tagRegex = /<\/?[^>]+>/g;
-            let lastIndex = 0;
-            let match;
-
-            while ((match = tagRegex.exec(html)) !== null) {
-                if (match.index > lastIndex) {
-                    // Text before the tag
-                    tokens.push({
-                        type: 'text',
-                        content: html.substring(lastIndex, match.index)
-                    });
-                }
-
-                // The tag itself
-                tokens.push({
-                    type: 'tag',
-                    content: match[0]
-                });
-
-                lastIndex = tagRegex.lastIndex;
-            }
-
-            if (lastIndex < html.length) {
-                // Remaining text after the last tag
-                tokens.push({
-                    type: 'text',
-                    content: html.substring(lastIndex)
+                    addChar();
                 });
             }
 
-            return tokens;
+            // Start processing nodes
+            processNodes(elements, botResponseBubble).then(() => {
+                // After streaming is done, add the copy button
+                addCopyButton(botResponseBubble);
+            });
         }
 
-        // Escape HTML to prevent XSS
+        // Escape HTML to prevent XSS (only escape characters, not actual HTML tags)
         function escapeHTML(text) {
             const div = document.createElement('div');
             div.innerText = text;
             return div.innerHTML;
         }
 
-        // Add copy functionality to the copy button
-        function addCopyFunctionality(chatElement, copyBtn) {
+        // Add copy button after each AI response
+        function addCopyButton(chatElement) {
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'copy-btn';
+            copyBtn.innerText = 'Copy';
+            chatElement.appendChild(copyBtn);
+
             copyBtn.addEventListener('click', () => {
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = chatElement.innerHTML;
