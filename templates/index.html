@@ -64,6 +64,7 @@
             font-family: monospace;
             overflow-x: auto;
             white-space: pre-wrap;
+            margin: 10px 0;
         }
 
         .input-box {
@@ -329,43 +330,93 @@
             copyBtn.style.display = 'none';  // Hide initially
             botResponseBubble.appendChild(copyBtn);
 
-            // Stream the response text
-            let currentIndex = 0;
+            // Tokenize the response into tags and text
+            const tokens = tokenizeHTML(response);
+            let currentTokenIndex = 0;
             const speed = 30;  // milliseconds per character
 
-            function typeCharacter() {
-                if (currentIndex < response.length) {
-                    const char = response[currentIndex];
-                    if (char === '`' && response.substr(currentIndex, 3) === '```') {
-                        // Handle code block
-                        const endIndex = response.indexOf('```', currentIndex + 3);
-                        if (endIndex !== -1) {
-                            const codeContent = response.substring(currentIndex + 3, endIndex);
-                            const pre = document.createElement('pre');
-                            pre.className = 'code-block';
-                            pre.innerText = codeContent;
-                            botResponseBubble.appendChild(pre);
-                            currentIndex = endIndex + 3;
-                            setTimeout(typeCharacter, speed);
-                            return;
-                        }
-                    }
-                    // Regular character
-                    if (!botResponseBubble.lastChild || botResponseBubble.lastChild.tagName !== 'P') {
-                        const p = document.createElement('p');
-                        botResponseBubble.appendChild(p);
-                    }
-                    botResponseBubble.lastChild.innerHTML += escapeHTML(char);
-                    currentIndex++;
-                    setTimeout(typeCharacter, speed);
-                } else {
+            function appendNextToken() {
+                if (currentTokenIndex >= tokens.length) {
                     // After streaming is done, show the copy button
                     copyBtn.style.display = 'inline-block';
                     addCopyFunctionality(botResponseBubble, copyBtn);
+                    return;
+                }
+
+                const token = tokens[currentTokenIndex];
+                currentTokenIndex++;
+
+                if (token.type === 'tag') {
+                    // Append tag directly
+                    botResponseBubble.innerHTML += token.content;
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                    appendNextToken();  // Immediately process the next token
+                } else if (token.type === 'text') {
+                    // Stream text character by character
+                    let charIndex = 0;
+
+                    function appendChar() {
+                        if (charIndex < token.content.length) {
+                            const char = token.content.charAt(charIndex);
+                            // If the last child is a <p> or <pre>, append to it
+                            let lastElement = botResponseBubble.lastElementChild;
+                            if (!lastElement || (lastElement.tagName !== 'P' && lastElement.tagName !== 'PRE')) {
+                                // Create a new <p> if needed
+                                const p = document.createElement('p');
+                                botResponseBubble.appendChild(p);
+                            }
+
+                            lastElement = botResponseBubble.lastElementChild;
+                            lastElement.innerHTML += escapeHTML(char);
+                            chatBox.scrollTop = chatBox.scrollHeight;
+                            charIndex++;
+                            setTimeout(appendChar, speed);
+                        } else {
+                            appendNextToken();  // Process the next token after finishing current text
+                        }
+                    }
+
+                    appendChar();
                 }
             }
 
-            typeCharacter();
+            appendNextToken();
+        }
+
+        // Simple HTML tokenizer
+        function tokenizeHTML(html) {
+            const tokens = [];
+            const tagRegex = /<\/?[^>]+>/g;
+            let lastIndex = 0;
+            let match;
+
+            while ((match = tagRegex.exec(html)) !== null) {
+                if (match.index > lastIndex) {
+                    // Text before the tag
+                    tokens.push({
+                        type: 'text',
+                        content: html.substring(lastIndex, match.index)
+                    });
+                }
+
+                // The tag itself
+                tokens.push({
+                    type: 'tag',
+                    content: match[0]
+                });
+
+                lastIndex = tagRegex.lastIndex;
+            }
+
+            if (lastIndex < html.length) {
+                // Remaining text after the last tag
+                tokens.push({
+                    type: 'text',
+                    content: html.substring(lastIndex)
+                });
+            }
+
+            return tokens;
         }
 
         // Escape HTML to prevent XSS
