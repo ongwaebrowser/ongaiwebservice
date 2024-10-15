@@ -14,7 +14,6 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            transition: background-color 0.3s, color 0.3s;
         }
 
         .container {
@@ -25,7 +24,6 @@
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
             padding: 20px;
             position: relative;
-            color: #000;
         }
 
         .chat-box {
@@ -41,7 +39,6 @@
             margin: 10px 0;
             border-radius: 5px;
             max-width: 85%;
-            position: relative;
         }
 
         .user-query {
@@ -89,6 +86,11 @@
             font-size: 16px;
         }
 
+        button:disabled {
+            background-color: grey;
+            cursor: not-allowed;
+        }
+
         button:hover {
             background-color: #1500a3;
         }
@@ -125,6 +127,22 @@
             }
         }
 
+        .copy-btn {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 6px 12px;
+            background-color: #0B0052;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .copy-btn:hover {
+            background-color: #1500a3;
+        }
+
         .menu {
             position: absolute;
             top: 10px;
@@ -148,84 +166,6 @@
         .toast.show {
             opacity: 1;
         }
-
-        body.dark-mode {
-            background-color: #222;
-            color: #fff;
-        }
-
-        body.dark-mode .container {
-            background-color: #333;
-            color: white;
-        }
-
-        body.dark-mode .chat-box {
-            color: white;
-        }
-
-        body.dark-mode input {
-            background-color: #555;
-            color: white;
-            border-color: #444;
-        }
-
-        body.dark-mode .bot-response {
-            background-color: #444;
-            color: #fff;
-        }
-
-        body.dark-mode .user-query {
-            background-color: #555;
-        }
-
-        /* Disclaimer style */
-        .disclaimer {
-            font-size: 12px;
-            color: #777;
-            margin-top: 5px;
-        }
-
-        /* Copy button style */
-        .copy-btn {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 8px 16px;
-            background-color: #0B0052;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            position: absolute;
-            right: 15px;
-            bottom: 10px;
-        }
-
-        .copy-btn:hover {
-            background-color: #1500a3;
-        }
-
-        /* Responsive design for mobile devices */
-        @media (max-width: 768px) {
-            .container {
-                max-width: 100%;
-                margin: 10px;
-            }
-
-            input, button {
-                font-size: 14px;
-                padding: 12px;
-            }
-
-            .chat-box {
-                font-size: 14px;
-            }
-
-            .copy-btn {
-                font-size: 12px;
-                padding: 6px 12px;
-            }
-        }
     </style>
 </head>
 <body>
@@ -234,10 +174,6 @@
         <div class="input-box">
             <input type="text" id="user-input" placeholder="Ask EasySearch AI...">
             <button id="send-btn">⏎</button>
-        </div>
-        <!-- Disclaimer below the input box -->
-        <div class="disclaimer">
-            <p>EasySearch AI can make mistakes. Consider double-checking important information.</p>
         </div>
         <div id="toast" class="toast"></div>
         <div class="menu">🌙</div>
@@ -262,24 +198,16 @@
             if (userText) {
                 addChatBubble(userText, 'user-query');
                 userInput.value = '';
-                addLoader(); // Show loading dots animation
+                sendBtn.disabled = true;  // Disable button on submit
+                addLoader();  // Show loading dots animation
 
-                // Send user query to the Flask backend
-                fetch('/query', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: `query=${encodeURIComponent(userText)}`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    removeLoader(); // Remove loading dots
-                    const botResponseText = data.response;
-                    animateResponse(botResponseText); // Animate response
-                })
-                .catch(error => {
-                    removeLoader();
-                    showToast("Error connecting to AI service. Please try again.");
-                });
+                // Simulate AI response from the backend (replace with your actual API call)
+                setTimeout(() => {
+                    const simulatedResponse = "Here's a sample response with code:\n```\nconsole.log('Hello, World!');\n```";
+                    removeLoader();  // Remove loading dots
+                    processBotResponse(simulatedResponse);  // Process and display AI response
+                    sendBtn.disabled = false;  // Re-enable button after response
+                }, 2000);
             }
         });
 
@@ -310,52 +238,43 @@
             }
         }
 
-        // Animate response by splitting text and code
-        function animateResponse(botResponseText) {
-            let i = 0;
-            const speed = 30; // Speed of typing animation (ms)
+        // Process bot response by rendering text and code
+        function processBotResponse(response) {
             const botResponseBubble = document.createElement('div');
             botResponseBubble.className = 'chat bot-response';
-            botResponseBubble.innerHTML = ''; // Empty content at first
+
+            const codeRegex = /```([\s\S]+?)```/g;
+            const parts = response.split(codeRegex);
+
+            parts.forEach((part, index) => {
+                if (index % 2 === 0) {
+                    // Regular text
+                    botResponseBubble.innerHTML += `<p>${part}</p>`;
+                } else {
+                    // Code block
+                    botResponseBubble.innerHTML += `<pre class="code-block">${part}</pre>`;
+                }
+            });
+
             chatBox.appendChild(botResponseBubble);
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            // Split into regular text and code blocks
-            const codeRegex = /```([\s\S]+?)```/g;
-            let parts = botResponseText.split(codeRegex);
-
-            // Process each part (either text or code)
-            function typeWriter() {
-                if (i < parts.length) {
-                    if (i % 2 === 0) {
-                        // Text part
-                        botResponseBubble.innerHTML += `<p>${parts[i]}</p>`;
-                    } else {
-                        // Code part
-                        botResponseBubble.innerHTML += `<pre class="code-block"><code>${parts[i]}</code></pre>`;
-                    }
-                    i++;
-                    chatBox.scrollTop = chatBox.scrollHeight;
-                    setTimeout(typeWriter, speed);
-                } else {
-                    addCopyButton(botResponseBubble); // Add copy button after the response
-                }
-            }
-            typeWriter(); // Start typing effect
+            // Add "Copy" button
+            addCopyButton(botResponseBubble);
         }
 
         // Add copy button after each AI response
         function addCopyButton(chatElement) {
             const copyBtn = document.createElement('button');
             copyBtn.className = 'copy-btn';
-            copyBtn.innerText = 'Copy Answer';
+            copyBtn.innerText = 'Copy';
             chatElement.appendChild(copyBtn);
 
             copyBtn.addEventListener('click', () => {
-                const textToCopy = chatElement.innerText; // Get the full text content
+                const textToCopy = chatElement.innerText;  // Get the full text content
                 navigator.clipboard.writeText(textToCopy).then(() => {
                     showToast('Copied to clipboard!');
-                }).catch(err => {
+                }).catch(() => {
                     showToast('Failed to copy.');
                 });
             });
