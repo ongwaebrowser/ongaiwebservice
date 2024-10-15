@@ -273,8 +273,8 @@
                 .then(response => response.json())
                 .then(data => {
                     removeLoader(); // Remove loading dots
-                    const botResponseHTML = data.response; // HTML content from Flask
-                    animateResponse(botResponseHTML); // Animate real bot response as HTML
+                    const botResponseText = data.response;
+                    animateResponse(botResponseText); // Animate response
                 })
                 .catch(error => {
                     removeLoader();
@@ -287,7 +287,7 @@
         function addChatBubble(text, type) {
             const bubble = document.createElement('div');
             bubble.className = `chat ${type}`;
-            bubble.innerHTML = text; // For user text, we directly insert as plain text
+            bubble.innerText = text;
             chatBox.appendChild(bubble);
             chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to the bottom
         }
@@ -310,37 +310,38 @@
             }
         }
 
-        // Animate the bot response with typing effect and render as HTML
-        function animateResponse(htmlContent) {
+        // Animate response by splitting text and code
+        function animateResponse(botResponseText) {
             let i = 0;
             const speed = 30; // Speed of typing animation (ms)
             const botResponseBubble = document.createElement('div');
             botResponseBubble.className = 'chat bot-response';
+            botResponseBubble.innerHTML = ''; // Empty content at first
             chatBox.appendChild(botResponseBubble);
+            chatBox.scrollTop = chatBox.scrollHeight;
 
+            // Split into regular text and code blocks
+            const codeRegex = /```([\s\S]+?)```/g;
+            let parts = botResponseText.split(codeRegex);
+
+            // Process each part (either text or code)
             function typeWriter() {
-                if (i < htmlContent.length) {
-                    botResponseBubble.innerHTML += htmlContent.charAt(i);
+                if (i < parts.length) {
+                    if (i % 2 === 0) {
+                        // Text part
+                        botResponseBubble.innerHTML += `<p>${parts[i]}</p>`;
+                    } else {
+                        // Code part
+                        botResponseBubble.innerHTML += `<pre class="code-block"><code>${parts[i]}</code></pre>`;
+                    }
                     i++;
                     chatBox.scrollTop = chatBox.scrollHeight;
                     setTimeout(typeWriter, speed);
                 } else {
-                    // Format code blocks after typing effect completes
-                    formatCodeBlocks(botResponseBubble);
                     addCopyButton(botResponseBubble); // Add copy button after the response
                 }
             }
             typeWriter(); // Start typing effect
-        }
-
-        // Function to format code blocks
-        function formatCodeBlocks(chatElement) {
-            const content = chatElement.innerHTML;
-            const codeRegex = /```([\s\S]+?)```/g;
-            const formattedContent = content.replace(codeRegex, (match, code) => {
-                return `<pre class="code-block"><code>${code}</code></pre>`;
-            });
-            chatElement.innerHTML = formattedContent;
         }
 
         // Add copy button after each AI response
