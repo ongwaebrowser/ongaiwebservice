@@ -35,6 +35,8 @@
             padding: 20px;
             border-bottom: 1px solid #ddd;
             font-size: 16px;
+            display: flex;
+            flex-direction: column;
         }
 
         .chat {
@@ -43,6 +45,7 @@
             border-radius: 5px;
             max-width: 85%;
             word-wrap: break-word;
+            position: relative;
         }
 
         .user-query {
@@ -53,6 +56,7 @@
         .bot-response {
             background-color: #e6ffe6;
             align-self: flex-end;
+            position: relative;
         }
 
         .code-block {
@@ -63,6 +67,7 @@
             font-family: monospace;
             overflow-x: auto;
             white-space: pre-wrap;
+            margin-top: 10px;
         }
 
         .input-box {
@@ -314,32 +319,110 @@
             }
         }
 
-        // Process bot response by rendering text and code
+        // Process bot response by rendering HTML with streaming effect
         function processBotResponse(response) {
             const botResponseBubble = document.createElement('div');
             botResponseBubble.className = 'chat bot-response';
-
-            const codeRegex = /```([\s\S]+?)```/g;
-            const parts = response.split(codeRegex);
-
-            parts.forEach((part, index) => {
-                if (index % 2 === 0) {
-                    // Regular text
-                    botResponseBubble.innerHTML += `<p>${part}</p>`;
-                } else {
-                    // Code block
-                    botResponseBubble.innerHTML += `<pre class="code-block">${escapeHTML(part)}</pre>`;
-                }
-            });
-
             chatBox.appendChild(botResponseBubble);
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            // Add "Copy" button
-            addCopyButton(botResponseBubble);
+            // Parse the HTML response
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(response, 'text/html');
+            const elements = Array.from(doc.body.childNodes);
+
+            // Function to process nodes sequentially
+            async function processNodes(nodes, parentElement) {
+                for (const node of nodes) {
+                    if (node.nodeType === Node.TEXT_NODE) {
+                        await typeText(node.textContent, parentElement);
+                    } else if (node.nodeType === Node.ELEMENT_NODE) {
+                        let newElement;
+                        switch (node.tagName.toLowerCase()) {
+                            case 'p':
+                                newElement = document.createElement('p');
+                                parentElement.appendChild(newElement);
+                                await typeText(node.textContent, newElement);
+                                break;
+                            case 'pre':
+                                newElement = document.createElement('pre');
+                                newElement.className = 'code-block';
+                                parentElement.appendChild(newElement);
+                                await typeText(node.textContent, newElement);
+                                break;
+                            case 'code':
+                                newElement = document.createElement('code');
+                                newElement.className = 'code-block';
+                                parentElement.appendChild(newElement);
+                                await typeText(node.textContent, newElement);
+                                break;
+                            case 'ul':
+                            case 'ol':
+                                newElement = document.createElement(node.tagName.toLowerCase());
+                                parentElement.appendChild(newElement);
+                                const listItems = Array.from(node.children).filter(child => child.tagName.toLowerCase() === 'li');
+                                for (const li of listItems) {
+                                    const listItem = document.createElement('li');
+                                    newElement.appendChild(listItem);
+                                    await typeText(li.textContent, listItem);
+                                }
+                                break;
+                            case 'h1':
+                            case 'h2':
+                            case 'h3':
+                            case 'h4':
+                            case 'h5':
+                            case 'h6':
+                                newElement = document.createElement(node.tagName.toLowerCase());
+                                parentElement.appendChild(newElement);
+                                await typeText(node.textContent, newElement);
+                                break;
+                            case 'blockquote':
+                                newElement = document.createElement('blockquote');
+                                parentElement.appendChild(newElement);
+                                await typeText(node.textContent, newElement);
+                                break;
+                            default:
+                                // For any other elements, clone them and process their children
+                                newElement = document.createElement(node.tagName.toLowerCase());
+                                parentElement.appendChild(newElement);
+                                await processNodes(Array.from(node.childNodes), newElement);
+                                break;
+                        }
+                    }
+                }
+            }
+
+            // Function to type text with delay
+            function typeText(text, element) {
+                return new Promise((resolve) => {
+                    let index = 0;
+                    const speed = 30;  // milliseconds per character
+
+                    function addChar() {
+                        if (index < text.length) {
+                            const char = text.charAt(index);
+                            element.innerHTML += escapeHTML(char);
+                            chatBox.scrollTop = chatBox.scrollHeight;
+                            index++;
+                            setTimeout(addChar, speed);
+                        } else {
+                            resolve();
+                        }
+                    }
+
+                    addChar();
+                });
+            }
+
+            // Start processing nodes
+            processNodes(elements, botResponseBubble).then(() => {
+                // After streaming is done, add the copy button
+                addCopyButton(botResponseBubble);
+            });
         }
 
-        // Escape HTML to prevent XSS
+        // Escape HTML to prevent XSS (only escape characters, not actual HTML tags)
         function escapeHTML(text) {
             const div = document.createElement('div');
             div.innerText = text;
@@ -354,7 +437,9 @@
             chatElement.appendChild(copyBtn);
 
             copyBtn.addEventListener('click', () => {
-                const textToCopy = chatElement.innerText;  // Get the full text content
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = chatElement.innerHTML;
+                const textToCopy = tempDiv.innerText;  // Get the full text content
                 navigator.clipboard.writeText(textToCopy).then(() => {
                     showToast('Copied to clipboard!');
                 }).catch(() => {
