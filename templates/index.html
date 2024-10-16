@@ -331,6 +331,8 @@
             const doc = parser.parseFromString(response, 'text/html');
             const elements = Array.from(doc.body.childNodes);
 
+            let containsCode = false; // Flag to determine if response contains code
+
             // Function to process nodes sequentially
             async function processNodes(nodes, parentElement) {
                 for (const node of nodes) {
@@ -348,12 +350,14 @@
                                 newElement = document.createElement('pre');
                                 newElement.className = 'code-block';
                                 parentElement.appendChild(newElement);
+                                containsCode = true;
                                 await typeText(node.textContent, newElement);
                                 break;
                             case 'code':
                                 newElement = document.createElement('code');
                                 newElement.className = 'code-block';
                                 parentElement.appendChild(newElement);
+                                containsCode = true;
                                 await typeText(node.textContent, newElement);
                                 break;
                             case 'ul':
@@ -422,7 +426,7 @@
             // Start processing nodes
             processNodes(elements, botResponseBubble).then(() => {
                 // After streaming is done, add the copy button
-                addCopyButton(botResponseBubble);
+                addCopyButton(botResponseBubble, containsCode);
             });
         }
 
@@ -434,37 +438,40 @@
         }
 
         // Add copy button after each AI response
-        function addCopyButton(chatElement) {
+        function addCopyButton(chatElement, containsCode) {
             const copyBtn = document.createElement('button');
             copyBtn.className = 'copy-btn';
             copyBtn.innerText = 'Copy';
             chatElement.appendChild(copyBtn);
 
             copyBtn.addEventListener('click', () => {
-                // Check if there is a code block
-                const codeBlocks = chatElement.querySelectorAll('.code-block');
-                if (codeBlocks.length > 0) {
-                    // If multiple code blocks, concatenate them
-                    let codeText = '';
+                if (containsCode) {
+                    // If response contains code, copy only the code
+                    const codeBlocks = chatElement.querySelectorAll('.code-block');
+                    let codeToCopy = '';
                     codeBlocks.forEach(block => {
-                        codeText += block.innerText + '\n\n';
+                        codeToCopy += block.innerText + '\n';
                     });
-                    codeText = codeText.trim();
-                    copyToClipboard(codeText, 'code');
+                    if (codeToCopy.trim() === '') {
+                        // If no code blocks found, fallback to entire text
+                        codeToCopy = chatElement.innerText;
+                    }
+                    navigator.clipboard.writeText(codeToCopy.trim()).then(() => {
+                        showToast('Code copied to clipboard!');
+                    }).catch(() => {
+                        showToast('Failed to copy code.');
+                    });
                 } else {
-                    // No code blocks, copy pure text without HTML tags
-                    const text = chatElement.innerText;
-                    copyToClipboard(text, 'text');
+                    // If no code, copy the pure text without any HTML tags
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = chatElement.innerHTML;
+                    const textToCopy = tempDiv.innerText;  // Get the full text content
+                    navigator.clipboard.writeText(textToCopy.trim()).then(() => {
+                        showToast('Text copied to clipboard!');
+                    }).catch(() => {
+                        showToast('Failed to copy text.');
+                    });
                 }
-            });
-        }
-
-        // Function to copy text to clipboard
-        function copyToClipboard(text, type) {
-            navigator.clipboard.writeText(text).then(() => {
-                showToast(type === 'code' ? 'Code copied to clipboard!' : 'Text copied to clipboard!');
-            }).catch(() => {
-                showToast('Failed to copy.');
             });
         }
 
