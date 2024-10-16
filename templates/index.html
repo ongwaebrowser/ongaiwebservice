@@ -441,14 +441,30 @@
             chatElement.appendChild(copyBtn);
 
             copyBtn.addEventListener('click', () => {
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = chatElement.innerHTML;
-                const textToCopy = tempDiv.innerText;  // Get the full text content
-                navigator.clipboard.writeText(textToCopy).then(() => {
-                    showToast('Copied to clipboard!');
-                }).catch(() => {
-                    showToast('Failed to copy.');
-                });
+                // Check if there is a code block
+                const codeBlocks = chatElement.querySelectorAll('.code-block');
+                if (codeBlocks.length > 0) {
+                    // If multiple code blocks, concatenate them
+                    let codeText = '';
+                    codeBlocks.forEach(block => {
+                        codeText += block.innerText + '\n\n';
+                    });
+                    codeText = codeText.trim();
+                    copyToClipboard(codeText, 'code');
+                } else {
+                    // No code blocks, copy pure text without HTML tags
+                    const text = chatElement.innerText;
+                    copyToClipboard(text, 'text');
+                }
+            });
+        }
+
+        // Function to copy text to clipboard
+        function copyToClipboard(text, type) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast(type === 'code' ? 'Code copied to clipboard!' : 'Text copied to clipboard!');
+            }).catch(() => {
+                showToast('Failed to copy.');
             });
         }
 
