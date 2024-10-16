@@ -385,6 +385,10 @@
                             default:
                                 // For any other elements, clone them and process their children
                                 newElement = document.createElement(node.tagName.toLowerCase());
+                                // Copy attributes if needed
+                                Array.from(node.attributes).forEach(attr => {
+                                    newElement.setAttribute(attr.name, attr.value);
+                                });
                                 parentElement.appendChild(newElement);
                                 await processNodes(Array.from(node.childNodes), newElement);
                                 break;
