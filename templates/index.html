@@ -216,7 +216,6 @@
             color: #f8f8f8;
         }
 
-        /* Updated warning message */
         .warning-message {
             color: #555;
             font-size: 9px;
@@ -286,16 +285,16 @@
                 .then(data => {
                     removeLoader();  // Remove loading dots
                     if (data.response) {
-                        processBotResponse(data.response);
+                        simulateTyping(data.response); // Use typing effect
                     } else {
-                        processBotResponse("Sorry, I didn't get that. Please try again.");
+                        simulateTyping("Sorry, I didn't get that. Please try again.");
                     }
                     sendBtn.disabled = false;  // Re-enable button after response
                 })
                 .catch(error => {
                     console.error('Error:', error);
                     removeLoader();  // Remove loading dots
-                    processBotResponse("Sorry, something went wrong. Please try again.");
+                    simulateTyping("Sorry, something went wrong. Please try again.");
                     sendBtn.disabled = false;  // Re-enable button after error
                 });
             }
@@ -310,56 +309,44 @@
             chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to the bottom
         }
 
-        // Add loader animation
-        function addLoader() {
-            const loader = document.createElement('div');
-            loader.className = 'chat bot-response loading-dots';
-            loader.id = 'loading-dots';
-            loader.innerHTML = '<span></span><span></span><span></span>';
-            chatBox.appendChild(loader);
-            chatBox.scrollTop = chatBox.scrollHeight;
+        // Simulate typing effect
+        function simulateTyping(response) {
+            let i = 0;
+            const botBubble = document.createElement('div');
+            botBubble.className = 'chat bot-response';
+            chatBox.appendChild(botBubble);
+
+            const typingInterval = setInterval(() => {
+                if (i < response.length) {
+                    botBubble.innerHTML += response.charAt(i);
+                    chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to the bottom
+                    i++;
+                } else {
+                    clearInterval(typingInterval);
+                }
+            }, 50);  // Adjust speed of typing here
         }
 
-        // Remove loader animation
+        // Add loading dots while waiting for response
+        function addLoader() {
+            const loaderDiv = document.createElement('div');
+            loaderDiv.className = 'loading-dots';
+            loaderDiv.innerHTML = '<span></span><span></span><span></span>';
+            chatBox.appendChild(loaderDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to the bottom
+        }
+
+        // Remove loader when done
         function removeLoader() {
-            const loader = document.getElementById('loading-dots');
-            if (loader) {
-                chatBox.removeChild(loader);
+            const loaderDiv = document.querySelector('.loading-dots');
+            if (loaderDiv) {
+                chatBox.removeChild(loaderDiv);
             }
         }
 
-        // Process and format bot's response
-        function processBotResponse(response) {
-            const formattedResponse = formatResponse(response);
-            const bubble = document.createElement('div');
-            bubble.className = 'chat bot-response';
-            bubble.innerHTML = formattedResponse;
-            chatBox.appendChild(bubble);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        // Format bot's response for code blocks
-        function formatResponse(text) {
-            // Replace markdown-style code blocks with styled ones
-            return text.replace(/```([\s\S]*?)```/g, (match, p1) => {
-                return `<div class="code-block">${p1}</div><button class="copy-btn" onclick="copyToClipboard('${p1.replace(/'/g, "\\'")}')">Copy</button>`;
-            });
-        }
-
-        // Copy code block content to clipboard
-        function copyToClipboard(content) {
-            const textarea = document.createElement('textarea');
-            textarea.value = content;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-            showToast("Copied to clipboard!");
-        }
-
-        // Show toast notification
+        // Display toast message
         function showToast(message) {
-            toast.textContent = message;
+            toast.innerText = message;
             toast.classList.add('show');
             setTimeout(() => {
                 toast.classList.remove('show');
@@ -367,4 +354,4 @@
         }
     </script>
 </body>
-    </html>
+</html>
