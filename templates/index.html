@@ -56,6 +56,18 @@
         .bot-response {
             background-color: #e6ffe6;
             align-self: flex-end;
+            position: relative;
+        }
+
+        .code-block {
+            background-color: #2e2e2e;
+            color: #f8f8f8;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            margin-top: 10px;
         }
 
         .input-box {
@@ -124,6 +136,29 @@
             }
         }
 
+        .copy-btn {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 6px 12px;
+            background-color: #0B0052;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .copy-btn:hover {
+            background-color: #1500a3;
+        }
+
+        .menu {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+        }
+
         .toast {
             position: absolute;
             bottom: 10px;
@@ -140,6 +175,53 @@
         .toast.show {
             opacity: 1;
         }
+
+        /* Dark mode styles */
+        body.dark-mode {
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .container {
+            background-color: #1e1e1e;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+        }
+
+        body.dark-mode .user-query {
+            background-color: #264653;
+            color: #fff;
+        }
+
+        body.dark-mode .bot-response {
+            background-color: #2a9d8f;
+            color: #fff;
+        }
+
+        body.dark-mode input {
+            background-color: #333;
+            color: #fff;
+            border: 1px solid #555;
+        }
+
+        body.dark-mode button {
+            background-color: #e76f51;
+        }
+
+        body.dark-mode button:hover:not(:disabled) {
+            background-color: #f4a261;
+        }
+
+        body.dark-mode .code-block {
+            background-color: #555;
+            color: #f8f8f8;
+        }
+
+        .warning-message {
+            color: #555;
+            margin-top: 10px;
+            font-size: 9px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -149,7 +231,9 @@
             <input type="text" id="user-input" placeholder="Ask EasySearch AI..." autocomplete="off">
             <button id="send-btn">⏎</button>
         </div>
+        <p class="warning-message">EasySearch AI can make errors. Please check important info!</p>
         <div id="toast" class="toast"></div>
+        <div class="menu">🌙</div>
     </div>
 
     <script>
@@ -157,9 +241,18 @@
         const userInput = document.getElementById('user-input');
         const sendBtn = document.getElementById('send-btn');
         const toast = document.getElementById('toast');
+        let isDarkMode = false;
+
+        // Toggle light/dark mode
+        document.querySelector('.menu').addEventListener('click', () => {
+            isDarkMode = !isDarkMode;
+            document.body.classList.toggle('dark-mode');
+        });
 
         // Handle submit button click
-        sendBtn.addEventListener('click', submitQuery);
+        sendBtn.addEventListener('click', () => {
+            submitQuery();
+        });
 
         // Handle Enter key press
         userInput.addEventListener('keypress', (e) => {
@@ -174,68 +267,46 @@
             if (userText) {
                 addChatBubble(userText, 'user-query');
                 userInput.value = '';
-                sendBtn.disabled = true;
-                addLoader();
+                sendBtn.disabled = true;  // Disable button on submit
+                addLoader();  // Show loading dots animation
 
+                // Send the query to the Flask backend
                 fetch('/query', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                         'X-Requested-With': 'XMLHttpRequest'
                     },
-                    body: new URLSearchParams({ 'query': userText })
+                    body: new URLSearchParams({
+                        'query': userText
+                    })
                 })
-                .then(response => response.body.getReader())
-                .then(reader => {
-                    const decoder = new TextDecoder();
-                    let responseText = '';
-                    return reader.read().then(function process({ done, value }) {
-                        if (done) {
-                            removeLoader();
-                            sendBtn.disabled = false;
-                            return;
-                        }
-                        responseText += decoder.decode(value);
-                        streamBotResponse(responseText);
-                        return reader.read().then(process);
-                    });
+                .then(response => response.json())
+                .then(data => {
+                    removeLoader();  // Remove loading dots
+                    if (data.response) {
+                        processBotResponse(data.response);
+                    } else {
+                        processBotResponse("Sorry, I didn't get that. Please try again.");
+                    }
+                    sendBtn.disabled = false;  // Re-enable button after response
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    removeLoader();
+                    removeLoader();  // Remove loading dots
                     processBotResponse("Sorry, something went wrong. Please try again.");
-                    sendBtn.disabled = false;
+                    sendBtn.disabled = false;  // Re-enable button after error
                 });
             }
-        }
-
-        // Simulate typing effect with i++ simulation
-        function streamBotResponse(response) {
-            const lastBubble = chatBox.querySelector('.chat.bot-response:last-child');
-            if (!lastBubble) {
-                addChatBubble('', 'bot-response');
-            }
-            const botBubble = chatBox.querySelector('.chat.bot-response:last-child');
-            
-            let i = 0;
-            const interval = setInterval(() => {
-                if (i < response.length) {
-                    botBubble.innerText += response.charAt(i);
-                    chatBox.scrollTop = chatBox.scrollHeight;
-                    i++;
-                } else {
-                    clearInterval(interval);
-                }
-            }, 50); // Typing speed (milliseconds)
         }
 
         // Add chat bubble to the chat box
         function addChatBubble(text, type) {
             const bubble = document.createElement('div');
             bubble.className = `chat ${type}`;
-            bubble.innerHTML = text;
+            bubble.innerText = text;
             chatBox.appendChild(bubble);
-            chatBox.scrollTop = chatBox.scrollHeight;
+            chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to the bottom
         }
 
         // Add loader animation
@@ -245,24 +316,47 @@
             loader.innerHTML = '<span></span><span></span><span></span>';
             loader.id = 'loading-dots';
             chatBox.appendChild(loader);
-            chatBox.scrollTop = chatBox.scrollHeight;
+            chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to the bottom
         }
 
         // Remove loader animation
         function removeLoader() {
             const loader = document.getElementById('loading-dots');
             if (loader) {
-                chatBox.removeChild(loader);
+                loader.remove();
             }
         }
 
-        // Show toast notification
+        // Process and display the bot response
+        function processBotResponse(response) {
+            addChatBubble('', 'bot-response');  // Create empty bubble for bot response
+            streamBotResponse(response);  // Stream bot response with typing effect
+        }
+
+        // Stream the bot response with typing effect
+        function streamBotResponse(response) {
+            let botBubble = document.querySelector('.chat.bot-response:last-child');
+            let i = 0;
+            const typingSpeed = 40;
+
+            const interval = setInterval(() => {
+                if (i < response.length) {
+                    botBubble.innerText += response.charAt(i);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                    i++;
+                } else {
+                    clearInterval(interval);
+                }
+            }, typingSpeed);
+        }
+
+        // Show toast message
         function showToast(message) {
             toast.innerText = message;
             toast.classList.add('show');
             setTimeout(() => {
                 toast.classList.remove('show');
-            }, 3000);
+            }, 2000);
         }
     </script>
 </body>
