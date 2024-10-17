@@ -5,14 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EasySearch AI</title>
     <style>
+        :root {
+            --bg-color-light: #f4f4f9;
+            --bg-color-dark: #121212;
+            --text-color-light: #333;
+            --text-color-dark: #f0f0f0;
+            --card-bg-light: #fff;
+            --card-bg-dark: #333;
+        }
+
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
+            background-color: var(--bg-color-light);
+            color: var(--text-color-light);
             margin: 0;
             padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         .container {
@@ -23,14 +34,15 @@
 
         h1 {
             text-align: center;
-            color: #333;
+            color: inherit;
         }
 
         .chat-container {
-            background-color: white;
+            background-color: var(--card-bg-light);
             border-radius: 10px;
             padding: 20px;
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s;
         }
 
         .chat-log {
@@ -40,85 +52,95 @@
         }
 
         .chat-log .card {
-            background-color: white;
+            background-color: var(--card-bg-light);
             border-radius: 10px;
             padding: 15px;
             margin-bottom: 10px;
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s;
         }
 
-        .chat-log .user-card {
-            background-color: #e3f2fd;
-            margin-left: auto;
-            text-align: right;
+        .user-message {
+            background-color: #0084ff;
+            color: white;
+            align-self: flex-end;
         }
 
-        .chat-log .ai-card {
-            background-color: #fff8e1;
-            margin-right: auto;
-            text-align: left;
+        .ai-message {
+            background-color: #e6e6e6;
+            color: black;
+            align-self: flex-start;
         }
 
-        .user-input-container {
+        #typing-indicator {
+            display: none;
+            font-style: italic;
+        }
+
+        .input-container {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            max-width: 900px;
             display: flex;
             justify-content: center;
-            margin-top: 10px;
+            padding: 10px;
+            background-color: inherit;
         }
 
-        .user-input {
-            width: 80%;
-            border-radius: 25px;
-            padding: 12px 20px;
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
             border: 1px solid #ccc;
+            margin-right: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
             font-size: 16px;
-            background-color: white;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            outline: none;
-        }
-
-        .user-input:focus {
-            border-color: #42a5f5;
-        }
-
-        .send-button {
-            margin-left: 10px;
-            padding: 12px 20px;
-            border-radius: 25px;
             border: none;
-            background-color: #42a5f5;
-            color: white;
-            font-size: 16px;
+            border-radius: 5px;
             cursor: pointer;
         }
 
-        .send-button:hover {
-            background-color: #1e88e5;
+        button.send-btn {
+            background-color: #0084ff;
+            color: white;
         }
 
-        .error-message {
-            color: #777;
-            font-size: 12px;
-            text-align: center;
-            margin-top: 10px;
+        .mode-switch {
+            position: fixed;
+            top: 10px;
+            right: 10px;
         }
 
-        .menu-container {
-            text-align: center;
-            margin-top: 15px;
-        }
-
-        .menu-button {
-            padding: 10px 20px;
-            background-color: #f4f4f4;
+        .mode-switch button {
+            background-color: var(--card-bg-light);
+            color: var(--text-color-light);
+            padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
             cursor: pointer;
-            margin: 5px;
         }
 
-        .menu-button.active {
-            background-color: #42a5f5;
-            color: white;
+        body.dark-mode {
+            background-color: var(--bg-color-dark);
+            color: var(--text-color-dark);
+        }
+
+        body.dark-mode .chat-container {
+            background-color: var(--card-bg-dark);
+        }
+
+        body.dark-mode .chat-log .card {
+            background-color: var(--card-bg-dark);
+        }
+
+        body.dark-mode input[type="text"], body.dark-mode button {
+            background-color: var(--card-bg-dark);
+            color: var(--text-color-dark);
         }
     </style>
 </head>
@@ -126,114 +148,71 @@
     <div class="container">
         <h1>EasySearch AI</h1>
         <div class="chat-container">
-            <div class="chat-log" id="chatLog"></div>
-            <div class="user-input-container">
-                <input type="text" id="userInput" class="user-input" placeholder="Ask me anything..." autofocus>
-                <button class="send-button" id="sendBtn">Send</button>
-            </div>
-            <div class="error-message" id="errorMessage"></div>
+            <div id="chat-log" class="chat-log"></div>
+            <div id="typing-indicator">EasySearch AI is dreaming...</div>
         </div>
 
-        <!-- Menu to switch modes -->
-        <div class="menu-container">
-            <button class="menu-button active" id="modeChat">Chat Mode</button>
-            <button class="menu-button" id="modeCode">Code Mode</button>
+        <div class="input-container">
+            <input type="text" id="user-input" placeholder="Ask me anything..." />
+            <button class="send-btn" onclick="sendMessage()">Send</button>
         </div>
     </div>
 
+    <div class="mode-switch">
+        <button onclick="toggleMode()">Toggle Dark/Light Mode</button>
+    </div>
+
     <script>
-        const chatLog = document.getElementById('chatLog');
-        const userInput = document.getElementById('userInput');
-        const sendBtn = document.getElementById('sendBtn');
-        const errorMessage = document.getElementById('errorMessage');
-        const modeChat = document.getElementById('modeChat');
-        const modeCode = document.getElementById('modeCode');
+        let isDarkMode = false;
 
-        let currentMode = 'chat';  // Default mode is 'chat'
-
-        // Send query to the server
-        async function sendQuery() {
-            const query = userInput.value.trim();
-            if (query === '') {
-                showError('Please enter a valid question.');
-                return;
-            }
-
-            appendUserMessage(query);
-
-            try {
-                const response = await fetch('/query', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: new URLSearchParams({ query })
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    appendAiMessage(data.response);
-                } else {
-                    appendAiMessage('An error occurred while processing your query.');
-                }
-            } catch (error) {
-                appendAiMessage('An error occurred. Please try again.');
-            }
-
-            userInput.value = '';  // Clear the input
+        function toggleMode() {
+            isDarkMode = !isDarkMode;
+            document.body.classList.toggle('dark-mode', isDarkMode);
         }
 
-        // Append user message to chat log
-        function appendUserMessage(message) {
-            const card = document.createElement('div');
-            card.classList.add('card', 'user-card');
+        async function sendMessage() {
+            const userInput = document.getElementById("user-input").value;
+            if (!userInput) return;
+
+            appendMessage(userInput, 'user');
+            document.getElementById("user-input").value = "";
+
+            showTypingIndicator(true);
+
+            // Simulate a delay (AI "dreaming" feature)
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            fetch('/query', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `query=${userInput}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                appendMessage(data.response, 'ai');
+                showTypingIndicator(false);
+            })
+            .catch(() => {
+                appendMessage("An error occurred. Please try again.", 'ai');
+                showTypingIndicator(false);
+            });
+        }
+
+        function appendMessage(message, type) {
+            const chatLog = document.getElementById("chat-log");
+            const card = document.createElement("div");
+            card.classList.add("card", type === 'user' ? "user-message" : "ai-message");
             card.textContent = message;
             chatLog.appendChild(card);
-            scrollToBottom();
-        }
-
-        // Append AI response to chat log
-        function appendAiMessage(message) {
-            const card = document.createElement('div');
-            card.classList.add('card', 'ai-card');
-            card.innerHTML = message;  // Allow HTML rendering
-            chatLog.appendChild(card);
-            scrollToBottom();
-        }
-
-        // Show error message
-        function showError(message) {
-            errorMessage.textContent = message;
-        }
-
-        // Scroll chat log to the bottom
-        function scrollToBottom() {
             chatLog.scrollTop = chatLog.scrollHeight;
         }
 
-        // Switch between modes
-        modeChat.addEventListener('click', () => {
-            currentMode = 'chat';
-            modeChat.classList.add('active');
-            modeCode.classList.remove('active');
-        });
-
-        modeCode.addEventListener('click', () => {
-            currentMode = 'code';
-            modeChat.classList.remove('active');
-            modeCode.classList.add('active');
-        });
-
-        // Send query when pressing Enter or clicking Send
-        userInput.addEventListener('keypress', (event) => {
-            if (event.key === 'Enter') {
-                sendQuery();
-            }
-        });
-
-        sendBtn.addEventListener('click', () => {
-            sendQuery();
-        });
+        function showTypingIndicator(show) {
+            const typingIndicator = document.getElementById("typing-indicator");
+            typingIndicator.style.display = show ? "block" : "none";
+        }
     </script>
 </body>
 </html>
