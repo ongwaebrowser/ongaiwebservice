@@ -37,7 +37,7 @@
             font-size: 16px;
             display: flex;
             flex-direction: column;
-            gap: 5px; /* Reduced spacing between chat bubbles */
+            gap: 5px;
         }
 
         .chat {
@@ -48,21 +48,20 @@
             word-wrap: break-word;
             position: relative;
             line-height: 1.6;
-            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1); /* Add shadow to chat bubbles */
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
         }
 
-        /* User query with gradient background */
         .user-query {
             background: linear-gradient(45deg, #66ccff, #3399ff);
             color: white;
             align-self: flex-start;
         }
 
-        /* AI response with white background and more visible card styling */
         .bot-response {
             background-color: #fff;
             align-self: flex-end;
             color: #333;
+            white-space: pre-wrap;
         }
 
         .code-block {
@@ -183,7 +182,6 @@
             opacity: 1;
         }
 
-        /* Dark mode styles */
         body.dark-mode {
             background-color: #121212;
             color: #e0e0e0;
@@ -337,18 +335,9 @@
         function processBotResponse(responseText) {
             const bubble = document.createElement('div');
             bubble.className = 'chat bot-response';
+            bubble.innerHTML = responseText;  // This will render markdown/html content
             chatBox.appendChild(bubble);
-
-            let index = 0;
-            function typeText() {
-                if (index < responseText.length) {
-                    bubble.innerHTML += responseText.charAt(index);
-                    index++;
-                    chatBox.scrollTop = chatBox.scrollHeight;  // Scroll as text is typed
-                    setTimeout(typeText, 30);  // Speed of typing animation
-                }
-            }
-            typeText();
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
 
         // Copy chat bubble content to clipboard while maintaining formatting
