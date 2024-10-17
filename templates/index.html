@@ -59,16 +59,16 @@
             position: relative;
         }
 
-        .code-block {
-            background-color: #2e2e2e;
-            color: #f8f8f8;
-            padding: 10px;
-            border-radius: 5px;
-            font-family: monospace;
-            overflow-x: auto;
-            white-space: pre-wrap;
-            margin-top: 10px;
-        }
+      .code-block {
+        background-color: #282c34;
+        color: #61dafb;
+        padding: 10px;
+        border-radius: 5px;
+        font-family: monospace;
+        overflow-x: auto;
+       white-space: pre-wrap;
+     }
+
 
         .input-box {
             display: flex;
@@ -310,22 +310,22 @@
         }
 
         // Simulate typing effect
-        function simulateTyping(response) {
-            let i = 0;
-            const botBubble = document.createElement('div');
-            botBubble.className = 'chat bot-response';
-            chatBox.appendChild(botBubble);
+        function simulateTyping(response, type) {
+           const bubble = document.createElement('div');
+          bubble.className = `chat ${type}`;
+          chatBox.appendChild(bubble);
 
-            const typingInterval = setInterval(() => {
-                if (i < response.length) {
-                    botBubble.innerHTML += response.charAt(i);
-                    chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to the bottom
-                    i++;
-                } else {
-                    clearInterval(typingInterval);
-                }
-            }, 50);  // Adjust speed of typing here
+       let i = 0;
+        const typingInterval = setInterval(() => {
+         if (i < response.length) {
+            bubble.innerHTML += response.charAt(i);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            i++;
+        } else {
+            clearInterval(typingInterval);
         }
+      }, 50);
+    }
 
         // Add loading dots while waiting for response
         function addLoader() {
