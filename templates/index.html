@@ -70,6 +70,14 @@
             margin-top: 10px;
         }
 
+        .bold-text {
+            font-weight: bold;
+        }
+
+        .strong-bold-text {
+            font-weight: bolder;
+        }
+
         .input-box {
             display: flex;
             padding: 15px;
@@ -331,18 +339,15 @@
         function processBotResponse(response) {
             const bubble = document.createElement('div');
             bubble.className = 'chat bot-response';
-            
-            // Check if the response contains code blocks
-            if (response.includes('<code>')) {
-                // Handle code block response
-                const codeBlock = document.createElement('div');
-                codeBlock.className = 'code-block';
-                codeBlock.innerText = response.replace(/<code>|<\/code>/g, '');  // Remove <code> tags
-                bubble.appendChild(codeBlock);
-            } else {
-                bubble.innerText = response;
-            }
 
+            // Replace code blocks between ``` with a formatted code block
+            const formattedResponse = response.replace(/```([^```]+)```/g, '<div class="code-block">$1</div>')
+                // Replace ** with strong bold
+                .replace(/\*\*([^*]+)\*\*/g, '<span class="strong-bold-text">$1</span>')
+                // Replace * with bold
+                .replace(/\*([^*]+)\*/g, '<span class="bold-text">$1</span>');
+
+            bubble.innerHTML = formattedResponse;  // Use innerHTML to render formatted response
             chatBox.appendChild(bubble);
             chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to the bottom
         }
