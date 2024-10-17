@@ -243,6 +243,7 @@
         const sendBtn = document.getElementById('send-btn');
         const toast = document.getElementById('toast');
         let isDarkMode = false;
+        const typingSpeed = 30; // Characters per second
 
         // Toggle light/dark mode
         document.querySelector('.menu').addEventListener('click', () => {
@@ -271,33 +272,12 @@
                 sendBtn.disabled = true;  // Disable button on submit
                 addLoader();  // Show loading dots animation
 
-                // Send the query to the Flask backend
-                fetch('/query', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: new URLSearchParams({
-                        'query': userText
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
+                // Simulate sending the query to the backend (replace this with actual fetch)
+                setTimeout(() => {
                     removeLoader();  // Remove loading dots
-                    if (data.response) {
-                        processBotResponse(data.response);
-                    } else {
-                        processBotResponse("Sorry, I didn't get that. Please try again.");
-                    }
+                    processBotResponse("Here is a simulated response from EasySearch AI. It will stream character by character.");
                     sendBtn.disabled = false;  // Re-enable button after response
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    removeLoader();  // Remove loading dots
-                    processBotResponse("Sorry, something went wrong. Please try again.");
-                    sendBtn.disabled = false;  // Re-enable button after error
-                });
+                }, 1000);  // Simulate server response time
             }
         }
 
@@ -328,38 +308,28 @@
             }
         }
 
-        // Process and format bot's response
+        // Process and stream bot's response character by character
         function processBotResponse(response) {
-            const formattedResponse = formatResponse(response);
-            const bubble = document.createElement('div');
+            let bubble = document.createElement('div');
             bubble.className = 'chat bot-response';
-            bubble.innerHTML = formattedResponse;
             chatBox.appendChild(bubble);
-            chatBox.scrollTop = chatBox.scrollHeight;
+
+            let i = 0;
+            const interval = setInterval(() => {
+                if (i < response.length) {
+                    bubble.innerText += response.charAt(i);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                    i++;
+                } else {
+                    clearInterval(interval);
+                    showToast('Response complete');
+                }
+            }, 1000 / typingSpeed);  // Adjust speed as per typingSpeed
         }
 
-        // Format bot's response for code blocks
-        function formatResponse(text) {
-            // Replace markdown-style code blocks with styled ones
-            return text.replace(/```([\s\S]*?)```/g, (match, p1) => {
-                return `<div class="code-block">${p1}</div><button class="copy-btn" onclick="copyToClipboard('${p1.replace(/'/g, "\\'")}')">Copy</button>`;
-            });
-        }
-
-        // Copy code block content to clipboard
-        function copyToClipboard(content) {
-            const textarea = document.createElement('textarea');
-            textarea.value = content;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-            showToast("Copied to clipboard!");
-        }
-
-        // Show toast notification
+        // Show toast message
         function showToast(message) {
-            toast.textContent = message;
+            toast.innerText = message;
             toast.classList.add('show');
             setTimeout(() => {
                 toast.classList.remove('show');
