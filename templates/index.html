@@ -32,20 +32,22 @@
         .chat-box {
             flex: 1;
             overflow-y: auto;
-            padding: 20px;
+            padding: 10px;
             border-bottom: 1px solid #ddd;
             font-size: 16px;
             display: flex;
             flex-direction: column;
+            gap: 5px; /* Reduce the space between messages */
         }
 
         .chat {
-            padding: 15px;
-            margin: 10px 0;
+            padding: 8px 10px;
+            margin: 5px 0;
             border-radius: 5px;
             max-width: 85%;
             word-wrap: break-word;
             position: relative;
+            line-height: 1.4;
         }
 
         .user-query {
@@ -62,23 +64,23 @@
         .code-block {
             background-color: #2e2e2e;
             color: #f8f8f8;
-            padding: 10px;
+            padding: 8px;
             border-radius: 5px;
             font-family: monospace;
             overflow-x: auto;
             white-space: pre-wrap;
-            margin-top: 10px;
+            margin-top: 5px;
         }
 
         .input-box {
             display: flex;
-            padding: 15px;
+            padding: 10px;
             border-top: 1px solid #ddd;
         }
 
         input {
             flex: 1;
-            padding: 15px;
+            padding: 10px;
             font-size: 16px;
             border: 1px solid #ddd;
             border-radius: 5px;
@@ -88,7 +90,7 @@
             background-color: #0B0052;
             color: white;
             border: none;
-            padding: 15px;
+            padding: 10px;
             margin-left: 10px;
             cursor: pointer;
             border-radius: 5px;
@@ -111,9 +113,9 @@
         }
 
         .loading-dots span {
-            height: 10px;
-            width: 10px;
-            margin: 0 3px;
+            height: 8px;
+            width: 8px;
+            margin: 0 2px;
             background-color: #0B0052;
             border-radius: 50%;
             animation: blink 1.2s infinite ease-in-out both;
@@ -138,7 +140,7 @@
 
         .copy-btn {
             display: inline-block;
-            margin-top: 10px;
+            margin-top: 5px;
             padding: 6px 12px;
             background-color: #0B0052;
             color: white;
@@ -219,7 +221,7 @@
         .warning-message {
             color: #555;
             margin-top: 10px;
-            font-size: 9px;
+            font-size: 12px;
             text-align: center;
         }
     </style>
@@ -231,7 +233,7 @@
             <input type="text" id="user-input" placeholder="Ask EasySearch AI..." autocomplete="off">
             <button id="send-btn">⏎</button>
         </div>
-        <p class="warning-message">EasySearch AI can make errors. Please check important info!</p>
+        <p class="warning-message">EasySearch AI can make errors. Check important Info!</p>
         <div id="toast" class="toast"></div>
         <div class="menu">🌙</div>
     </div>
@@ -312,48 +314,36 @@
         // Add loader animation
         function addLoader() {
             const loader = document.createElement('div');
-            loader.className = 'loading-dots';
-            loader.innerHTML = '<span></span><span></span><span></span>';
-            loader.id = 'loading-dots';
+            loader.className = 'chat bot-response loader';
+            loader.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div>';
             chatBox.appendChild(loader);
-            chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to the bottom
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
 
         // Remove loader animation
         function removeLoader() {
-            const loader = document.getElementById('loading-dots');
+            const loader = document.querySelector('.loader');
             if (loader) {
-                chatBox.removeChild(loader);
+                loader.remove();
             }
         }
 
-        // Process bot response and add it to the chat box
-        function processBotResponse(response) {
+        // Process and animate the bot response text
+        function processBotResponse(responseText) {
             const bubble = document.createElement('div');
             bubble.className = 'chat bot-response';
-            
-            // Check if the response contains code blocks
-            if (response.includes('<code>')) {
-                // Handle code block response
-                const codeBlock = document.createElement('div');
-                codeBlock.className = 'code-block';
-                codeBlock.innerText = response.replace(/<code>|<\/code>/g, '');  // Remove <code> tags
-                bubble.appendChild(codeBlock);
-            } else {
-                bubble.innerText = response;
-            }
-
             chatBox.appendChild(bubble);
-            chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to the bottom
-        }
 
-        // Show toast notification
-        function showToast(message) {
-            toast.innerText = message;
-            toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
+            let index = 0;
+            function typeText() {
+                if (index < responseText.length) {
+                    bubble.innerHTML += responseText.charAt(index);
+                    index++;
+                    chatBox.scrollTop = chatBox.scrollHeight;  // Scroll as text is typed
+                    setTimeout(typeText, 30);  // Speed of typing animation
+                }
+            }
+            typeText();
         }
     </script>
 </body>
