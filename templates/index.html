@@ -323,40 +323,37 @@
         function removeLoader() {
             const loader = document.getElementById('loading-dots');
             if (loader) {
-                loader.remove();
+                chatBox.removeChild(loader);
             }
         }
 
-        // Process and display the bot response
+        // Process bot response and add it to the chat box
         function processBotResponse(response) {
-            addChatBubble('', 'bot-response');  // Create empty bubble for bot response
-            streamBotResponse(response);  // Stream bot response with typing effect
+            const bubble = document.createElement('div');
+            bubble.className = 'chat bot-response';
+            
+            // Check if the response contains code blocks
+            if (response.includes('<code>')) {
+                // Handle code block response
+                const codeBlock = document.createElement('div');
+                codeBlock.className = 'code-block';
+                codeBlock.innerText = response.replace(/<code>|<\/code>/g, '');  // Remove <code> tags
+                bubble.appendChild(codeBlock);
+            } else {
+                bubble.innerText = response;
+            }
+
+            chatBox.appendChild(bubble);
+            chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to the bottom
         }
 
-        // Stream the bot response with typing effect
-        function streamBotResponse(response) {
-            let botBubble = document.querySelector('.chat.bot-response:last-child');
-            let i = 0;
-            const typingSpeed = 40;
-
-            const interval = setInterval(() => {
-                if (i < response.length) {
-                    botBubble.innerText += response.charAt(i);
-                    chatBox.scrollTop = chatBox.scrollHeight;
-                    i++;
-                } else {
-                    clearInterval(interval);
-                }
-            }, typingSpeed);
-        }
-
-        // Show toast message
+        // Show toast notification
         function showToast(message) {
             toast.innerText = message;
             toast.classList.add('show');
             setTimeout(() => {
                 toast.classList.remove('show');
-            }, 2000);
+            }, 3000);
         }
     </script>
 </body>
