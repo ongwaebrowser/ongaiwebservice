@@ -5,44 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EasySearch AI</title>
     <style>
-        :root {
-            --bg-color-light: #f4f4f9;
-            --bg-color-dark: #121212;
-            --text-color-light: #333;
-            --text-color-dark: #f0f0f0;
-            --card-bg-light: #fff;
-            --card-bg-dark: #333;
-        }
-
         body {
             font-family: Arial, sans-serif;
-            background-color: var(--bg-color-light);
-            color: var(--text-color-light);
+            background-color: #f4f4f9;
             margin: 0;
             padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            transition: background-color 0.3s, color 0.3s;
+            height: 100vh;
         }
 
         .container {
             width: 100%;
             max-width: 900px;
             margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
 
         h1 {
             text-align: center;
-            color: inherit;
+            color: #333;
+            margin-bottom: 20px;
         }
 
         .chat-container {
-            background-color: var(--card-bg-light);
+            background-color: white;
             border-radius: 10px;
             padding: 20px;
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-            transition: background-color 0.3s;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         .chat-log {
@@ -52,95 +49,94 @@
         }
 
         .chat-log .card {
-            background-color: var(--card-bg-light);
+            background-color: white;
             border-radius: 10px;
             padding: 15px;
             margin-bottom: 10px;
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-            transition: background-color 0.3s;
+            width: fit-content;
         }
 
-        .user-message {
-            background-color: #0084ff;
-            color: white;
+        .chat-log .user-card {
+            background-color: #e3f2fd;
             align-self: flex-end;
+            text-align: right;
         }
 
-        .ai-message {
-            background-color: #e6e6e6;
-            color: black;
+        .chat-log .ai-card {
+            background-color: #fff8e1;
             align-self: flex-start;
+            text-align: left;
         }
 
-        #typing-indicator {
-            display: none;
-            font-style: italic;
-        }
-
-        .input-container {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            max-width: 900px;
+        .user-input-container {
             display: flex;
             justify-content: center;
             padding: 10px;
-            background-color: inherit;
+            border-top: 1px solid #ddd;
+            background-color: #fafafa;
+            border-radius: 0 0 10px 10px;
         }
 
-        input[type="text"] {
-            flex: 1;
-            padding: 10px;
-            font-size: 16px;
-            border-radius: 5px;
+        .user-input {
+            flex-grow: 1;
+            border-radius: 25px;
+            padding: 12px 20px;
             border: 1px solid #ccc;
-            margin-right: 10px;
+            font-size: 16px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            outline: none;
         }
 
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
+        .user-input:focus {
+            border-color: #42a5f5;
+        }
+
+        .send-button {
+            margin-left: 10px;
+            padding: 12px 20px;
+            border-radius: 25px;
             border: none;
-            border-radius: 5px;
+            background-color: #42a5f5;
+            color: white;
+            font-size: 16px;
             cursor: pointer;
         }
 
-        button.send-btn {
-            background-color: #0084ff;
+        .send-button:hover {
+            background-color: #1e88e5;
+        }
+
+        .error-message {
+            color: #f44336;
+            font-size: 12px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .menu-container {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .menu-button {
+            padding: 10px 20px;
+            background-color: #f4f4f4;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        .menu-button.active {
+            background-color: #42a5f5;
             color: white;
         }
 
-        .mode-switch {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-        }
-
-        .mode-switch button {
-            background-color: var(--card-bg-light);
-            color: var(--text-color-light);
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        body.dark-mode {
-            background-color: var(--bg-color-dark);
-            color: var(--text-color-dark);
-        }
-
-        body.dark-mode .chat-container {
-            background-color: var(--card-bg-dark);
-        }
-
-        body.dark-mode .chat-log .card {
-            background-color: var(--card-bg-dark);
-        }
-
-        body.dark-mode input[type="text"], body.dark-mode button {
-            background-color: var(--card-bg-dark);
-            color: var(--text-color-dark);
+        /* Ensure smooth scrolling */
+        html {
+            scroll-behavior: smooth;
         }
     </style>
 </head>
@@ -148,71 +144,114 @@
     <div class="container">
         <h1>EasySearch AI</h1>
         <div class="chat-container">
-            <div id="chat-log" class="chat-log"></div>
-            <div id="typing-indicator">EasySearch AI is dreaming...</div>
+            <div class="chat-log" id="chatLog"></div>
+            <div class="user-input-container">
+                <input type="text" id="userInput" class="user-input" placeholder="Ask me anything..." autofocus>
+                <button class="send-button" id="sendBtn">Send</button>
+            </div>
+            <div class="error-message" id="errorMessage"></div>
         </div>
 
-        <div class="input-container">
-            <input type="text" id="user-input" placeholder="Ask me anything..." />
-            <button class="send-btn" onclick="sendMessage()">Send</button>
+        <!-- Optional Menu for switching modes -->
+        <div class="menu-container">
+            <button class="menu-button active" id="modeChat">Chat Mode</button>
+            <button class="menu-button" id="modeCode">Code Mode</button>
         </div>
-    </div>
-
-    <div class="mode-switch">
-        <button onclick="toggleMode()">Toggle Dark/Light Mode</button>
     </div>
 
     <script>
-        let isDarkMode = false;
+        const chatLog = document.getElementById('chatLog');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const errorMessage = document.getElementById('errorMessage');
+        const modeChat = document.getElementById('modeChat');
+        const modeCode = document.getElementById('modeCode');
 
-        function toggleMode() {
-            isDarkMode = !isDarkMode;
-            document.body.classList.toggle('dark-mode', isDarkMode);
+        let currentMode = 'chat';  // Default mode is 'chat'
+
+        // Send query to the server
+        async function sendQuery() {
+            const query = userInput.value.trim();
+            if (!query) {
+                showError('Please enter a valid question.');
+                return;
+            }
+
+            appendUserMessage(query);
+
+            try {
+                const response = await fetch('/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({ query }),
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    appendAiMessage(data.response);
+                } else {
+                    appendAiMessage('An error occurred while processing your query.');
+                }
+            } catch (error) {
+                appendAiMessage('An error occurred. Please try again.');
+            }
+
+            userInput.value = '';  // Clear the input
         }
 
-        async function sendMessage() {
-            const userInput = document.getElementById("user-input").value;
-            if (!userInput) return;
-
-            appendMessage(userInput, 'user');
-            document.getElementById("user-input").value = "";
-
-            showTypingIndicator(true);
-
-            // Simulate a delay (AI "dreaming" feature)
-            await new Promise(resolve => setTimeout(resolve, 2000));
-
-            fetch('/query', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `query=${userInput}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                appendMessage(data.response, 'ai');
-                showTypingIndicator(false);
-            })
-            .catch(() => {
-                appendMessage("An error occurred. Please try again.", 'ai');
-                showTypingIndicator(false);
-            });
-        }
-
-        function appendMessage(message, type) {
-            const chatLog = document.getElementById("chat-log");
-            const card = document.createElement("div");
-            card.classList.add("card", type === 'user' ? "user-message" : "ai-message");
+        // Append user message to chat log
+        function appendUserMessage(message) {
+            const card = document.createElement('div');
+            card.classList.add('card', 'user-card');
             card.textContent = message;
             chatLog.appendChild(card);
+            scrollToBottom();
+        }
+
+        // Append AI response to chat log
+        function appendAiMessage(message) {
+            const card = document.createElement('div');
+            card.classList.add('card', 'ai-card');
+            card.innerHTML = message;  // Allow HTML rendering
+            chatLog.appendChild(card);
+            scrollToBottom();
+        }
+
+        // Show error message
+        function showError(message) {
+            errorMessage.textContent = message;
+        }
+
+        // Scroll chat log to the bottom
+        function scrollToBottom() {
             chatLog.scrollTop = chatLog.scrollHeight;
         }
 
-        function showTypingIndicator(show) {
-            const typingIndicator = document.getElementById("typing-indicator");
-            typingIndicator.style.display = show ? "block" : "none";
-        }
+        // Switch between modes
+        modeChat.addEventListener('click', () => {
+            currentMode = 'chat';
+            modeChat.classList.add('active');
+            modeCode.classList.remove('active');
+        });
+
+        modeCode.addEventListener('click', () => {
+            currentMode = 'code';
+            modeChat.classList.remove('active');
+            modeCode.classList.add('active');
+        });
+
+        // Send query when pressing Enter or clicking Send
+        userInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                sendQuery();
+            }
+        });
+
+        sendBtn.addEventListener('click', () => {
+            sendQuery();
+        });
     </script>
 </body>
 </html>
