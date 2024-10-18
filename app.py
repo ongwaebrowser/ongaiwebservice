@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, session
+Ifrom flask import Flask, render_template, request, jsonify, session
 import requests
 import os
 from dotenv import load_dotenv
@@ -33,7 +33,7 @@ def query():
         data = response.json()
         return jsonify({'response': data.get('answer', 'Error: No response received from AI')})
     except Exception as e:
-        return jsonify({'response': f"An error occurred: {str(e)}"})
+        return jsonify({'response': f"An error occurred"})
 
 @app.route('/reset', methods=['POST'])
 def reset_session():
