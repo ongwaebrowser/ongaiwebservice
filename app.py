@@ -1,4 +1,4 @@
-Ifrom flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session
 import requests
 import os
 from dotenv import load_dotenv
@@ -26,14 +26,16 @@ def home():
 def query():
     user_input = request.form['query']
     
-    # Send query to AI service
+    # Send query to AI service with a longer timeout to avoid frequent errors
     try:
-        response = requests.get(API_URL + user_input)
+        response = requests.get(API_URL + user_input, timeout=15)  # 15 seconds timeout
         response.raise_for_status()  # Ensure valid response
         data = response.json()
-        return jsonify({'response': data.get('answer', 'Error: No response received from AI')})
+        return jsonify({'response': data.get('answer', 'Error: retry')})
+    except requests.exceptions.Timeout:
+        return jsonify({'response': "The request timed out. Please try again."})
     except Exception as e:
-        return jsonify({'response': f"An error occurred"})
+        return jsonify({'response': f"An error occurred. Please try again later."})
 
 @app.route('/reset', methods=['POST'])
 def reset_session():
