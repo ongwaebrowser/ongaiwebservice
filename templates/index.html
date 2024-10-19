@@ -5,231 +5,157 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EasySearch AI</title>
     <style>
-        :root {
-            --light-bg: #f4f4f9;
-            --light-text: #333;
-            --dark-bg: #1e1e1e;
-            --dark-text: #f4f4f9;
-            --primary-color: #007BFF;
-        }
-
         body {
-            font-family: 'Helvetica Neue', sans-serif;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
             margin: 0;
             padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            background-color: var(--light-bg);
-            color: var(--light-text);
-            transition: background-color 0.3s, color 0.3s;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: #333;
         }
 
         .container {
             width: 100%;
-            max-width: 900px;
+            max-width: 800px;
+            background-color: white;
             padding: 20px;
-            margin-top: 60px;
-        }
-
-        .response-container {
-            min-height: 300px;
-            margin-bottom: 50px;
-            padding: 20px;
-            background-color: #fff;
             border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            overflow-y: auto;
-            max-height: 500px;
-            white-space: pre-wrap;
-            word-wrap: break-word;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
         }
 
-        .response-text {
-            font-size: 18px;
-            line-height: 1.6;
+        .query-box {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
         }
 
-        pre code {
-            display: block;
+        .query-box input[type="text"] {
             padding: 10px;
-            margin: 10px 0;
             font-size: 16px;
-            line-height: 1.4;
-            background-color: #f8f8f8;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        .query-box button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .query-box button:hover {
+            background-color: #45a049;
+        }
+
+        .response-card {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            overflow-wrap: break-word;
+            position: relative;
+        }
+
+        .response-card pre {
+            background-color: #f4f4f4;
+            padding: 10px;
             border-radius: 5px;
             white-space: pre-wrap;
-            word-wrap: break-word;
-            overflow-x: auto;
         }
 
-        .fixed-bar {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            background-color: var(--light-bg);
-            padding: 10px 20px;
-            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+        .response-card code {
+            background-color: #f4f4f4;
+            padding: 5px;
+            border-radius: 5px;
+            font-family: Consolas, "Courier New", monospace;
         }
 
-        .query-input {
-            width: 100%;
+        .response-card .user-query {
+            background: linear-gradient(135deg, #FF7E79, #FFBABA);
             padding: 15px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
+            color: white;
+            border-radius: 10px;
+            margin-bottom: 10px;
         }
 
-        .btn {
-            padding: 10px 20px;
-            background-color: var(--primary-color);
-            color: #fff;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 16px;
+        .warning-message {
+            font-size: 14px;
+            color: red;
+            text-align: center;
             margin-top: 10px;
         }
 
-        .theme-toggle {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            padding: 5px 10px;
-            cursor: pointer;
-            border-radius: 20px;
-            background-color: var(--primary-color);
-            color: #fff;
-            font-size: 14px;
-        }
-
-        .dark-mode {
-            background-color: var(--dark-bg);
-            color: var(--dark-text);
-        }
-
-        .dark-mode .response-container {
-            background-color: #333;
-            color: var(--dark-text);
-        }
-
-        .dark-mode .fixed-bar {
-            background-color: #333;
-        }
-
-        .dark-mode .query-input {
-            background-color: #555;
-            color: var(--dark-text);
-            border: 1px solid #777;
-        }
-
-        .dark-mode pre code {
-            background-color: #444;
-            color: #f4f4f9;
-        }
-
-        .typing-indicator {
-            display: inline-block;
-            margin-left: 5px;
-            height: 20px;
-            width: 20px;
-            background-color: var(--primary-color);
-            border-radius: 50%;
-            animation: typing 1.5s infinite;
-        }
-
+        /* Animation for streaming text */
         @keyframes typing {
-            0%, 100% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-10px);
-            }
+            from { width: 0 }
+            to { width: 100% }
+        }
+
+        .stream-text {
+            white-space: pre-wrap;
+            display: inline-block;
+            overflow: hidden;
+            border-right: 2px solid #000;
+            animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
+        }
+
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: black; }
         }
 
     </style>
 </head>
 <body>
-
-    <div class="theme-toggle" onclick="toggleTheme()">Switch to Dark Mode</div>
-
     <div class="container">
-        <div class="response-container" id="response-container">
-            <p class="response-text" id="response-text"></p>
+        <h1>EasySearch AI</h1>
+        <div class="query-box">
+            <input type="text" id="queryInput" placeholder="Ask a question...">
+            <button onclick="submitQuery()">Search</button>
         </div>
-    </div>
 
-    <div class="fixed-bar">
-        <form id="query-form">
-            <input type="text" id="query-input" class="query-input" placeholder="Ask me anything..." autocomplete="off" />
-            <button type="submit" class="btn">Submit</button>
-        </form>
+        <div id="responseContainer"></div>
+        <div class="warning-message">EasySearch AI can make errors. Check important Info!</div>
     </div>
 
     <script>
-        // Handle the dark mode toggle
-        let isDarkMode = false;
+        function submitQuery() {
+            const query = document.getElementById('queryInput').value;
+            if (query) {
+                const userQueryHTML = `<div class="response-card"><div class="user-query">${query}</div></div>`;
+                document.getElementById('responseContainer').insertAdjacentHTML('beforeend', userQueryHTML);
 
-        function toggleTheme() {
-            isDarkMode = !isDarkMode;
-            document.body.classList.toggle('dark-mode', isDarkMode);
-            document.querySelector('.theme-toggle').textContent = isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode";
-        }
-
-        // Function to simulate a typing effect
-        function simulateTyping(text, element) {
-            let index = 0;
-            const typingSpeed = 50; // Speed in ms for each character
-
-            function type() {
-                if (index < text.length) {
-                    element.innerHTML += text.charAt(index);
-                    index++;
-                    setTimeout(type, typingSpeed);
-                }
-            }
-            type();
-        }
-
-        // Form submission event
-        document.getElementById('query-form').addEventListener('submit', function (event) {
-            event.preventDefault();
-            
-            const queryInput = document.getElementById('query-input');
-            const query = queryInput.value.trim();
-            
-            if (!query) {
-                return;
-            }
-
-            const responseContainer = document.getElementById('response-container');
-            const responseText = document.getElementById('response-text');
-            
-            // Clear the response area and add a typing indicator
-            responseText.innerHTML = '<span class="typing-indicator"></span>';
-            
-            // Make the API request
-            fetch('/query', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({
-                    query: query
+                // Simulate AI response streaming
+                fetch('/query', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: query })
                 })
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Clear the typing indicator
-                responseText.innerHTML = '';
-
-                // Simulate streaming response by typing the result text character by character
-                simulateTyping(data.response, responseText);
-            })
-            .catch(error => {
-                responseText.innerHTML = 'An error occurred. Please try again.';
-            });
-        });
+                .then(response => response.json())
+                .then(data => {
+                    let aiResponseHTML = `<div class="response-card"><pre class="stream-text">${data.response}</pre></div>`;
+                    document.getElementById('responseContainer').insertAdjacentHTML('beforeend', aiResponseHTML);
+                })
+                .catch(err => {
+                    let errorHTML = `<div class="response-card"><div>Error loading response.</div></div>`;
+                    document.getElementById('responseContainer').insertAdjacentHTML('beforeend', errorHTML);
+                });
+            }
+        }
     </script>
 </body>
 </html>
