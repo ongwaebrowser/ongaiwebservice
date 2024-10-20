@@ -244,6 +244,7 @@
         const sendBtn = document.getElementById('send-btn');
         const toast = document.getElementById('toast');
         let isDarkMode = false;
+        let responseBubble;  // To hold reference to the single bot response bubble
 
         // Toggle light/dark mode
         document.querySelector('.menu').addEventListener('click', () => {
@@ -309,9 +310,19 @@
             bubble.innerHTML = text;
             chatBox.appendChild(bubble);
             chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to the bottom
+
+            // Remove the previous bot response bubble if it exists
+            if (type === 'bot-response' && responseBubble) {
+                responseBubble.remove();
+            }
+
+            // Update the reference for the bot response bubble
+            if (type === 'bot-response') {
+                responseBubble = bubble;
+            }
         }
 
-        // Add loader animation
+        // Show loader animation
         function addLoader() {
             const loader = document.createElement('div');
             loader.className = 'loading-dots';
@@ -328,7 +339,7 @@
             }
         }
 
-        // Type bot response character by character
+        // Type bot response character by character in the same bubble
         function typeBotResponse(text) {
             let i = 0;
             let displayText = '';
