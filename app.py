@@ -3,6 +3,7 @@ import requests
 import os
 from dotenv import load_dotenv
 from datetime import timedelta
+import urllib.parse
 
 # Load environment variables from .env file
 load_dotenv()
@@ -16,7 +17,7 @@ app.secret_key = os.getenv('FLASK_SECRET_KEY')
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
 
 # API URL to query the AI service
-API_URL = "https://ongai.vercel.app/api/ask?message="  # The endpoint URL
+API_URL = "https://ongai.vercel.app/api/ask?message="
 
 @app.route('/')
 def home():
@@ -24,28 +25,21 @@ def home():
 
 @app.route('/query', methods=['POST'])
 def query():
-    user_input = request.form['query']  # Get input from the form
+    user_input = request.form['query']
+    
+    # URL encode the query to avoid bad request errors
+    encoded_input = urllib.parse.quote(user_input)
 
-    # Ensure the user input is not empty before sending the request
-    if not user_input.strip():
-        return jsonify({'response': 'Please enter a valid query.'})
-
+    # Send query to AI service without timeout to avoid errors
     try:
-        # Send query to AI service without a timeout, and passing 'message' as the query parameter
-        response = requests.get(API_URL + user_input)
-        response.raise_for_status()  # Ensure the response is valid (status 200)
-
-        # Parse the JSON response
+        response = requests.get(API_URL + encoded_input)
+        response.raise_for_status()  # Ensure valid response
         data = response.json()
-
-        # Return the AI response or error
-        if 'answer' in data:
-            return jsonify({'response': data['answer']})
-        else:
-            return jsonify({'response': 'retry.'})
-
-    except requests.exceptions.RequestException as e:
-        return jsonify({'response': f"An error occurred: {str(e)}"})
+        return jsonify({'response': data.get('answer', 'Error: retry')})
+    except requests.exceptions.Timeout:
+        return jsonify({'response': "The request timed out. Please try again."})
+    except Exception as e:
+        return jsonify({'response': f"An error occurred. Please try again later: {str(e)}"})
 
 @app.route('/reset', methods=['POST'])
 def reset_session():
