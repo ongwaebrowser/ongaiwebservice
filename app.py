@@ -42,7 +42,7 @@ def query():
         if 'answer' in data:
             return jsonify({'response': data['answer']})
         else:
-            return jsonify({'response': 'No valid response received from the AI.'})
+            return jsonify({'response': 'retry.'})
 
     except requests.exceptions.RequestException as e:
         return jsonify({'response': f"An error occurred: {str(e)}"})
