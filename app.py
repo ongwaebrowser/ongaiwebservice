@@ -15,8 +15,8 @@ app.secret_key = os.getenv('FLASK_SECRET_KEY')
 # Set session timeout
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
 
-# API URL to query the AI service (as provided by you)
-API_URL = "https://ongai.vercel.app/api/ask?message="
+# API URL to query the AI service
+API_URL = "https://ongai.vercel.app/api/ask?message="  # The endpoint URL
 
 @app.route('/')
 def home():
@@ -24,17 +24,28 @@ def home():
 
 @app.route('/query', methods=['POST'])
 def query():
-    user_input = request.form['query']
-    
-    # Send query to AI service without a timeout
+    user_input = request.form['query']  # Get input from the form
+
+    # Ensure the user input is not empty before sending the request
+    if not user_input.strip():
+        return jsonify({'response': 'Please enter a valid query.'})
+
     try:
-        # Remove the timeout parameter to wait indefinitely for the response
-        response = requests.get(API_URL + user_input)  # No timeout parameter
-        response.raise_for_status()  # Ensure valid response
+        # Send query to AI service without a timeout, and passing 'message' as the query parameter
+        response = requests.get(API_URL + user_input)
+        response.raise_for_status()  # Ensure the response is valid (status 200)
+
+        # Parse the JSON response
         data = response.json()
-        return jsonify({'response': data.get('answer', 'Error: retry')})
+
+        # Return the AI response or error
+        if 'answer' in data:
+            return jsonify({'response': data['answer']})
+        else:
+            return jsonify({'response': 'No valid response received from the AI.'})
+
     except requests.exceptions.RequestException as e:
-        return jsonify({'response': f"An error occurred. Please try again later. {str(e)}"})
+        return jsonify({'response': f"An error occurred: {str(e)}"})
 
 @app.route('/reset', methods=['POST'])
 def reset_session():
