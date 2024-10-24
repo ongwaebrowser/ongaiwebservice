@@ -165,6 +165,46 @@
             cursor: pointer;
         }
 
+        .sidenav {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            background-color: #111;
+            overflow-x: hidden;
+            transition: 0.5s;
+            padding-top: 60px;
+        }
+
+        .sidenav a {
+            padding: 8px 8px 8px 32px;
+            text-decoration: none;
+            font-size: 25px;
+            color: #818181;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .sidenav a:hover {
+            color: #f1f1f1;
+        }
+
+        .sidenav .closebtn {
+            position: absolute;
+            top: 0;
+            right: 25px;
+            font-size: 36px;
+            margin-left: 50px;
+        }
+
+        .dark-mode-toggle {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+
         .toast {
             position: absolute;
             bottom: 10px;
@@ -182,7 +222,6 @@
             opacity: 1;
         }
 
-        /* Dark mode styles */
         body.dark-mode {
             background-color: #121212;
             color: #e0e0e0;
@@ -197,7 +236,19 @@
     </style>
 </head>
 <body>
+    <div id="mySidenav" class="sidenav">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+        <a href="#">Home</a>
+        <a href="#">Go Pro</a>
+        <a href="#">Settings</a>
+        <div class="dark-mode-toggle">
+            <label for="mode-switch">Dark Mode</label>
+            <input type="checkbox" id="mode-switch">
+        </div>
+    </div>
+
     <div class="container">
+        <span class="menu" onclick="openNav()">☰</span>
         <div class="chat-box" id="chat-box"></div>
         <div class="input-box">
             <input type="text" id="user-input" placeholder="Ask EasySearch AI..." autocomplete="off">
@@ -205,7 +256,6 @@
         </div>
         <p class="warning-message">EasySearch AI can make errors. Check important Info!</p>
         <div id="toast" class="toast"></div>
-        <div class="menu">🌙</div>
     </div>
 
     <script>
@@ -215,18 +265,22 @@
         const toast = document.getElementById('toast');
         let isDarkMode = false;
 
-        // Toggle light/dark mode
-        document.querySelector('.menu').addEventListener('click', () => {
-            isDarkMode = !isDarkMode;
+        document.getElementById('mode-switch').addEventListener('change', () => {
             document.body.classList.toggle('dark-mode');
         });
 
-        // Handle submit button click
+        function openNav() {
+            document.getElementById('mySidenav').style.width = '250px';
+        }
+
+        function closeNav() {
+            document.getElementById('mySidenav').style.width = '0';
+        }
+
         sendBtn.addEventListener('click', () => {
             submitQuery();
         });
 
-        // Handle Enter key press
         userInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -239,10 +293,9 @@
             if (userText) {
                 addChatBubble(userText, 'user-query');
                 userInput.value = '';
-                sendBtn.disabled = true;  // Disable button on submit
-                addLoader();  // Show loading dots animation
+                sendBtn.disabled = true;
+                addLoader();
 
-                // Send the query to the Flask backend
                 fetch('/query', {
                     method: 'POST',
                     headers: {
@@ -255,19 +308,19 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    removeLoader();  // Remove loading dots
+                    removeLoader();
                     if (data.response) {
                         simulateTyping(data.response);
                     } else {
                         simulateTyping("Sorry, I didn't get that. Please try again.");
                     }
-                    sendBtn.disabled = false;  // Re-enable button after response
+                    sendBtn.disabled = false;
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    removeLoader();  // Remove loading dots
+                    removeLoader();
                     simulateTyping("Sorry, something went wrong. Please try again.");
-                    sendBtn.disabled = false;  // Re-enable button after error
+                    sendBtn.disabled = false;
                 });
             }
         }
@@ -295,34 +348,38 @@
         }
 
         // Add chat bubble to the chat box
-        function addChatBubble(text, type) {
+        function addChatBubble(text, className) {
             const bubble = document.createElement('div');
-            bubble.className = `chat ${type}`;
+            bubble.className = `chat ${className}`;
             bubble.textContent = text;
             chatBox.appendChild(bubble);
-            chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to bottom
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // Add loading dots animation
+        // Add loader animation
         function addLoader() {
             const loader = document.createElement('div');
             loader.className = 'loading-dots';
             loader.innerHTML = '<span></span><span></span><span></span>';
             chatBox.appendChild(loader);
-            chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to bottom
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // Remove loading dots
+        // Remove loader animation
         function removeLoader() {
-            const loader = document.querySelector('.loading-dots');
-            if (loader) loader.remove();
+            const loader = chatBox.querySelector('.loading-dots');
+            if (loader) {
+                loader.remove();
+            }
         }
 
-        // Show toast notification
+        // Show toast message
         function showToast(message) {
             toast.textContent = message;
             toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);  // Hide after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
         }
     </script>
 </body>
