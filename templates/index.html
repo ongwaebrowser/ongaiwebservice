@@ -312,10 +312,17 @@
             chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to bottom
         }
 
-        // Remove loading dots animation
+        // Remove loading dots
         function removeLoader() {
             const loader = document.querySelector('.loading-dots');
             if (loader) loader.remove();
+        }
+
+        // Show toast notification
+        function showToast(message) {
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);  // Hide after 3 seconds
         }
     </script>
 </body>
