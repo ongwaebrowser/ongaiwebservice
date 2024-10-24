@@ -332,17 +332,27 @@
             chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to bottom
         }
 
-        // Simulate typing effect for bot response
-        function simulateTyping(response) {
-            let i = 0;
-            const typingInterval = setInterval(() => {
-                if (i < response.length) {
-                    addChatBubble(response.slice(0, i + 1), 'bot-response');
-                    i++;
-                } else {
-                    clearInterval(typingInterval);
-                }
-            }, 50);  // Adjust typing speed
+        
+    // Simulate typing for bot response
+    function simulateTyping(response) {
+             let index = 0;
+             const bubble = document.createElement('div');
+                   bubble.className = 'chat bot-response';
+                   chatBox.appendChild(bubble);
+        
+             const typeInterval = setInterval(() => {
+          if (index < response.length) {
+               bubble.textContent += response[index];
+               index++;
+               chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to bottom
+           } else {
+                 clear""Interval(typeInterval);
+              if (response.includes("```")) {
+                 const parts = response.split("```");
+                 bubble.innerHTML = parts[0] + '<div class="code-block">' + parts[1] + '</div>';
+              }
+             }
+            }, 50);  // Simulate typing speed (50ms per character)
         }
 
         // Show loading dots
