@@ -39,7 +39,7 @@ def query():
     except requests.exceptions.Timeout:
         return jsonify({'response': "The request timed out. Please try again."})
     except Exception as e:
-        return jsonify({'response': f"An error occurred. Please try again later: {str(e)}"})
+        return jsonify({'response': f"An error occurred. Please try again"})
 
 @app.route('/reset', methods=['POST'])
 def reset_session():
